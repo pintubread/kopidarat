@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS activity (
   DEFERRABLE INITIALLY DEFERRED,
   category VARCHAR(32) REFERENCES category(category),
   activity_name VARCHAR(128) NOT NULL,
-  start_datetime DATETIME NOT NULL,
-  end_datetime DATETIME NOT NULL CHECK start_datetime <= end_datetime,
+  start_date_time DATETIME NOT NULL,
+  end_date_time DATETIME NOT NULL CHECK start_date_time <= end_date_time,
   venue VARCHAR(128) NOT NULL,
   capacity INTEGER NOT NULL CHECK (capacity >= 0)
 )
