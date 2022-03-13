@@ -57,6 +57,6 @@ CREATE TABLE IF NOT EXISTS report (
   timestamp DATETIME NOT NULL,
   user VARCHAR(64) REFERENCES user(email),
   comment VARCHAR(4096) NOT NULL,
-  severity VARCHAR(6) NOT NULL,
+  severity VARCHAR(6) NOT NULL CHECK (severity = 'low' OR severity = 'medium' OR severity = 'high'),
   PRIMARY KEY (submitter,timestamp)
 )
