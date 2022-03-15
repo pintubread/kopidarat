@@ -16,7 +16,7 @@
             </div>
             <input class="btn btn-primary" type="submit" value="Login">
         </form>
-
-        Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+        <div><a href="{% url 'forget_password' %}">Forgot your password?</a></div>
+        <div><a href="{% url 'register' %}">Don't have an account?</a></div>
     </div>
 {% endblock %}

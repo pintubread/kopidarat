@@ -27,7 +27,9 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-
+    path("forget_password",views.forget_password,name="forget_password"),
+    path("reset_password", views.reset_password, name="reset_password"),
+  
     # Joining Activity page
     path("create_activity", views.create_activity, name='create_activity'),
 
@@ -36,4 +38,6 @@ urlpatterns = [
 
     # Create report page
     path("report", views.create_report, name='report')
-]
+
+
+
