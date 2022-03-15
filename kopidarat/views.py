@@ -5,10 +5,52 @@ from django.urls import reverse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+import datetime
 
 # Create your views here.
 def index(request):
-    return render(request,"index.html")
+    # return render(request,"index.html")
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM activity WHERE %s < end_date_time ORDER BY start_date_time ASC', [datetime.datetime.now()])
+        activities = cursor.fetchall()
+    
+    results = {'records' : activities}
+
+    return render(request,"index.html", results)
+
+def create_activity(request):
+    if request.method == 'POST':
+
+        with connection.cursor() as cursor:
+
+            cursor.execute('INSERT INTO activity VALUES (%s %s %s %s %s %s %s)', 
+            [ request.POST['inviter'],request.POST['category'],request.POST['activity_name'], request.POST['start_date_time'],
+            request.POST['end_date_time'], request.POST['venue'],request.POST['capacity']])
+
+    return render(request, 'create_activity.html')
+
+def create_review(request):
+    if request.method =='POST':
+
+        with connection.cursor() as cursor:
+            cursor.execute('INSERT INTO review VALUES (%s %s %s %s)', [
+                request.POST['activity_id'],datetime.datetime.now(),request.POST['participant'],
+                request.POST['comment']
+            ])
+
+    return render(request, 'review.html')
+
+def create_report(request):
+    if request.method =='POST':
+        
+        with connection.cursor() as cursor:
+            cursor.execute('INSERT INTO report VALUES (%s %s %s %s %s)', [
+                request.POST['submitter'],datetime.datetime.now(),request.POST['user'],
+                request.POST['comment'],request.POST['severity']
+            ])
+
+    return render(request,'report.html')
+
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -79,5 +121,6 @@ def register(request):
     return render(request, "register.html", context)
 
 
-
+    
+    
 

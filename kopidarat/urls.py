@@ -19,10 +19,21 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Main Page
     path('', views.index, name='index'),
     
-    # AUTHENTICATION
+    # Authentication pages 
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path("register", views.register, name="register")
+    path("register", views.register, name="register"),
+
+    # Joining Activity page
+    path("create_activity", views.create_activity, name='create_activity'),
+
+    # Create review page
+    path("review", views.create_review, name='review'),
+
+    # Create report page
+    path("report", views.create_report, name='report')
 ]

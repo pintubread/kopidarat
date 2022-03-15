@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS activity (
 CREATE TABLE IF NOT EXISTS join (
   activity_id INT REFERENCES activity(activity_id),
   participant VARCHAR(64) REFERENCES user(email),
-  rating FLOAT(5) CHECK (rating >= 1 AND rating <= 5).
+  rating FLOAT(5) CHECK (rating >= 1 AND rating <= 5)
   PRIMARY KEY (activity_id,participant)
 )
 
