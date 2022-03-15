@@ -4,6 +4,8 @@ from django.db import connection, IntegrityError
 from django.urls import reverse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.mail import send_mail
+from django.template import loader
 
 
 # Create your views here.
@@ -41,8 +43,7 @@ def logout_view(request):
 def register(request):
     context={}
     status=''
-    if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("index"))
+
     if request.method == "POST":
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -78,6 +79,42 @@ def register(request):
     context['status'] = status
     return render(request, "register.html", context)
 
+def forget_password(request):
+    if request.method == "POST":
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM user WHERE email = %s", [request.POST['email']])
+            user_fullname = cursor.fetchone()
+            if user_fullname == None:
+                return render(request, "forget_password.html", 
+                {"message": "The given email is not registered under any account."})
+            else:
+                html_message = loader.render_to_string('reset_password_email.html',
+                {'full_name': user_fullname})
+                send_mail(subject="KopiDarat Account Password Reset",
+                message="Looks like you've forgotten your KopiDarat password! To reset your password, follow the link below:",
+                recipient_list=[request.post['email'],],
+                fail_silently=False, html_message=html_message)
+                return render(request,"reset_password_email_sent.html")
+    return render(request,"forget_password.html")
+
+
+
+
+
+
+def reset_password(request):
+    if request.method == "POST":
+        password = request.POST["password"]
+        confirmation = request.POST["confirmation"]
+        if password != confirmation:
+            return render(request, "reset_password.html", {
+                "message": "Passwords must match."
+            })
+        
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE user SET password=%s WHERE email=%s",[request.POST['password'],request.user.email])
+            return render(request,"reset_password_successful.html")
+    return render(request,"reset_password.html")
 
 
 
