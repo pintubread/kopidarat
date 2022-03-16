@@ -13,7 +13,7 @@ import datetime
 def index(request):
     # return render(request,"index.html")
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM activity WHERE %s < end_date_time ORDER BY start_date_time ASC', [datetime.datetime.now()])
+        cursor.execute('SELECT * FROM activity WHERE %s < start_date_time ORDER BY start_date_time ASC', [datetime.datetime.now()])
         activities = cursor.fetchall()
     
     results = {'records' : activities}
@@ -25,9 +25,17 @@ def create_activity(request):
 
         with connection.cursor() as cursor:
 
-            cursor.execute('INSERT INTO activity VALUES (%s %s %s %s %s %s %s)', 
-            [ request.POST['inviter'],request.POST['category'],request.POST['activity_name'], request.POST['start_date_time'],
-            request.POST['end_date_time'], request.POST['venue'],request.POST['capacity']])
+            cursor.execute('INSERT INTO activity(inviter,activity_name,category,start_date_time,venue,capacity) VALUES (%s %s %s %s %s %s)', [
+                request.POST['inviter'],request.POST['activity_name'],request.POST['category'], request.POST['start_date_time'],
+                request.POST['venue'],request.POST['capacity']
+            ])
+
+            # Insert inviter into table 'joins' as participant, not sure of how to insert the activity_id
+            #
+            # cursor.execute('INSERT INTO joins(activity_id,participant) VALUES (%s %s)', [
+            #   request.POST['...'], request.POST['inviter']
+            # ])
+            #
 
     return render(request, 'create_activity.html')
 
