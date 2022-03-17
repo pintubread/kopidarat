@@ -38,6 +38,6 @@ urlpatterns = [
 
     # Create report page
     path("report", views.create_report, name='report')
-
+]
 
 
