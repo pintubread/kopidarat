@@ -32,6 +32,12 @@ urlpatterns = [
   
     # Joining Activity page
     path("create_activity", views.create_activity, name='create_activity'),
+    path("join/<int:activity_id>", views.join, name="join"), 
+
+    # Current User Activity Page 
+    path("user_activity",views.user_activity, name='user_activity'),
+    path("update_activity/<int:activity_id>",views.update_activity, name='update_activity'),
+    path("delete_activity/<int:activity_id>", views.delete_activity, name = 'delete_activity'),
 
     # Create review page
     path("review", views.create_review, name='review'),

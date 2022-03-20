@@ -4,10 +4,10 @@
     <title>Create Activity</title>
   </head>
   <body>
-    <h2>Add New Activity</h2>
-    <a href="/">Back to home</a>
+    <h2>Update Activity</h2>
+    <a href="/user_activity">Back to your activities</a>
 
-    <form action="{% url 'create_activity' %}" method="post">
+    <form method="POST">
       {% csrf_token %}
       <div class="form-group">
         <input
@@ -45,7 +45,7 @@
       <div class="form-group">
         <input class="form-control" type="number" name="capacity" />
       </div>
-      <input class="btn btn-primary" type="submit" value="Create Activity" />
+      <input class="btn btn-primary" type="submit" value="Update Activity" />
     </form>
   </body>
 </html>
