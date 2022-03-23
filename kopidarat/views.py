@@ -261,16 +261,16 @@ def register(request):
         ## Check if customerid is already in the table
         with connection.cursor() as cursor:
 
-            cursor.execute("SELECT * FROM user WHERE email = %s", [request.POST['email']])
+            cursor.execute("SELECT * FROM users WHERE email = %s", [request.POST['email']])
             user = cursor.fetchone()
 
             ## No user with same email
             if user == None:
-                cursor.execute("SELECT * FROM user WHERE username = %s",[request.POST['username']])
+                cursor.execute("SELECT * FROM users WHERE username = %s",[request.POST['username']])
                 user = cursor.fetchone()
 
                 if user == None:
-                    cursor.execute("INSERT INTO user VALUES (%s, %s, %s, %s, %s, 'member')"
+                    cursor.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s, 'member')"
                             , [request.POST['full_name'], request.POST['username'], request.POST['email'],
                             request.POST['phone_number'],request.POST['password']])
                     with connection.cursor() as cursor:
