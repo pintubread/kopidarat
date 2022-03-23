@@ -38,6 +38,7 @@ urlpatterns = [
     path("user_activity",views.user_activity, name='user_activity'),
     path("update_activity/<int:activity_id>",views.update_activity, name='update_activity'),
     path("delete_activity/<int:activity_id>", views.delete_activity, name = 'delete_activity'),
+    path("participants/<int:activity_id>", views.participants, name = 'participants'),
 
     # Create review page
     path("review", views.create_review, name='review'),

@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>{{activity_name}}</title>
+  </head>
+  <body>
+    <h2>People joining this activity</h2>
+    <br />
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone Number</th>
+      </thead>
+      {% for participant in participants %}
+      <tr>
+        <td>{{ participant.0 }}</td>
+        <td>{{ participant.1 }}</td>
+        <td>{{ participant.2 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
