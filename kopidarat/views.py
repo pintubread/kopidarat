@@ -21,9 +21,8 @@ def index(request):
     Return:
         render function: renders the main page (path: '') 
     '''
-    # Get the current_user username and email, need to fix the login part to proceed 
+    # Checking if user is logged in
     user_email = request.session.get("email", False)
-
     if user_email is not False:
         # Get all activities data from the database
         with connection.cursor() as cursor:
@@ -84,11 +83,10 @@ def join(request,activity_id):
     Return:
         HTTP response redirect to the main page. 
     '''
+    #Check if user is logged in
     user_email = request.session.get("email", False)
     if user_email is not False:
         with connection.cursor() as cursor:
-
-            # The email here is still hardcoded, need to fix the login part first to proceed 
             cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
                 activity_id,request.session.get("email")
             ])
@@ -183,15 +181,19 @@ def create_review(request):
         return HttpResponseRedirect(reverse("index"))
 
 def create_report(request):
-    if request.method =='POST':
-        
-        with connection.cursor() as cursor:
-            cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
-                request.POST['submitter'],datetime.datetime.now(),request.POST['user'],
-                request.POST['comment'],request.POST['severity']
-            ])
+    user_email = request.session.get("email", False)
+    if user_email is not False:
+        if request.method =='POST':
+            
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
+                    request.POST['submitter'],datetime.datetime.now(),request.POST['user'],
+                    request.POST['comment'],request.POST['severity']
+                ])
 
-    return render(request,'report.html')
+        return render(request,'report.html')
+    else:
+        return HttpResponseRedirect(reverse("index"))
 
 
 def login_view(request):
@@ -255,8 +257,6 @@ def register(request):
             return render(request, "register.html", {
                 "message": "Passwords must match."
             })
-        # Attempt to create new user
-        # to do: modify that it directly inserts new user to database
 
         ## Check if customerid is already in the table
         with connection.cursor() as cursor:
