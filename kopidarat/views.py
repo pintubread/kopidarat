@@ -165,6 +165,33 @@ def delete_activity(request,activity_id):
     else:
         return HttpResponseRedirect(reverse("index"))
 
+def participants(request,activity_id):
+    """ 
+    Method that enables people who have signed up in the activity to view everyone else who signed up.
+    """
+    context={}
+    user_email = request.session.get("email", False)
+    if user_email is not False:
+        with connection.cursor() as cursor:
+            # Execute SQL query to check if user is registered under this activity
+            cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [
+                activity_id, user_email
+            ])
+            user=cursor.fetchone()
+        if user is not None:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
+                [int(activity_id),user_email])
+                participants=cursor.fetchall()
+                cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
+                activity_name,inviter=cursor.fetchone()
+                context["participants"]=participants
+                context["activity_name"]=activity_name
+                context["inviter"]=inviter
+            return render(request,'participants.html',context)
+    #to add additional message saying user is not registered for the activity        
+    return HttpResponseRedirect(reverse("index"))
+
 
 def create_review(request):
     user_email = request.session.get("email", False)
@@ -236,7 +263,7 @@ def login_view(request):
                 "message": "Invalid username and/or password."
             })
     else:
-        return render(request, "login.html")
+        return render(request, "login.html",{"message":"Please login to view our site."})
 
 
 def logout_view(request):

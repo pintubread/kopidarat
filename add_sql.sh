@@ -1,9 +1,9 @@
 # Construct the URI from the .env
-DB_HOST=''
-DB_NAME=''
-DB_USER=''
-DB_PORT=''
-DB_PASSWORD=''
+DB_HOST=""
+DB_NAME=""
+DB_USER=""
+DB_PORT=""
+DB_PASSWORD=""
 
 while IFS= read -r line
 do
@@ -28,6 +28,13 @@ done < ".env"
 URI="postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
 
 # Run the scripts to insert data.
+psql ${URI} -f sql/DisplayDropTables.sql
 psql ${URI} -f sql/Schema.sql
+psql ${URI} -f sql/Users.sql
+psql ${URI} -f sql/Member.sql
+psql ${URI} -f sql/Administrator.sql
+psql ${URI} -f sql/Category.sql
+psql ${URI} -f sql/Activity.sql
+psql ${URI} -f sql/Joins.sql
 
 
