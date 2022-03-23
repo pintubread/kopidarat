@@ -3,7 +3,12 @@
     <title>Your Activities</title>
   </head>
   <body>
-    <h1> Hello {{user_fullname}}!</h1>
+    <h1>Hello {{user_fullname}}!</h1>
+    <br />
+    <br />
+    <a href="/"> Back to Main Page </a>
+    <br />
+    <br />
     <h2>Activities that you have created</h2>
     <br />
     <table border="1">
@@ -21,7 +26,7 @@
       <tr>
         <td>{{ activity.0 }}</td>
         <td>{{ activity.3 }}</td>
-        <td>{{ activity.1 }}</td>
+        <td>{{ activity.7 }}</td>
         <td>{{ activity.2 }}</td>
         <td>{{ activity.4 }}</td>
         <td>{{ activity.5 }}</td>
@@ -30,6 +35,15 @@
           <a
             class="button"
             href="update_activity/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Edit
+          </a>
+        </td>
+        <td>
+          <a
+            class="button"
+            href="participants/{{ activity.0 }}"
             class="text-decoration-none"
           >
             Edit

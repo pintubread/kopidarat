@@ -1,7 +1,31 @@
 {% load static %}
 <html>
+  <head>
+    <title>Create Review</title>
+  </head>
   <body>
-    <h2>HAVEN'T CREATED ANYTHING YET :")"</h2>
-    <br /><br />
+    <h2>Add New Review</h2>
+    <a href="/">Back to home</a>
+
+    <form action="{% url 'review' %}" method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="number"
+          name="activity_id"
+          placeholder="Activity ID"
+        />
+      </div>
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="comment"
+          placeholder="Enter your review here!"
+        />
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit Review" />
+    </form>
   </body>
 </html>

@@ -1,7 +1,36 @@
 {% load static %}
 <html>
   <body>
-    <h2>HAVEN'T CREATED ANYTHING YET :")"</h2>
-    <br /><br />
+    <h2>Add New Report</h2>
+    <a href="/">Back to home</a>
+
+    <form action="{% url 'report' %}" method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="username"
+          placeholder="Username"
+        />
+      </div>
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="comment"
+          placeholder="Enter your report here"
+        />
+      </div>
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="severity"
+          placeholder="Medium"
+        />
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit Report" />
+    </form>
   </body>
 </html>

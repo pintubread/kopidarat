@@ -22,6 +22,7 @@ urlpatterns = [
 
     # Main Page
     path('', views.index, name='index'),
+    path('index_admin', views.index_admin, name='index_admin'),
     
     # Authentication pages 
     path("login", views.login_view, name="login"),

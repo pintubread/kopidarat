@@ -9,7 +9,7 @@ from django.template import loader
 # Custom imports 
 import datetime
 
-# View Functions 
+# View Functions for main pages of the website  
 def index(request):
     '''
     Index view function responsible for the main page of the website.
@@ -23,10 +23,11 @@ def index(request):
     '''
     # Checking if user is logged in
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         # Get all activities data from the database
         with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM activity WHERE %s < start_date_time ORDER BY start_date_time ASC', [datetime.datetime.now()])
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND %s < a.start_date_time ORDER BY a.start_date_time ASC', [datetime.datetime.now()])
             activities = cursor.fetchall()
 
         # Put all the records inside the dictionary context
@@ -47,17 +48,19 @@ def create_activity(request):
     '''
     #Check if user is logged in
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         if request.method == 'POST': # TODO: catch error when there's no post method, e.g. cancel to create activity
 
             with connection.cursor() as cursor:
-                # For now the email is still hard-coded, need to fix the login part first to proceed
+
+                # Insert the activity into the database
                 cursor.execute('INSERT INTO activity (inviter,activity_name,category,start_date_time,venue,capacity) VALUES (%s,%s,%s,%s,%s,%s)', [
                     request.session.get("email"),request.POST['activity_name'],request.POST['category'], request.POST['start_date_time'],
                     request.POST['venue'],request.POST['capacity']
                 ])
 
-                # Get the activity details, could be improved for later
+                # Get the activity details
                 cursor.execute('SELECT activity_id FROM activity WHERE inviter =  %s AND activity_name = %s AND category = %s AND start_date_time = %s AND venue = %s AND capacity = %s',[
                     request.session.get("email"),request.POST['activity_name'],request.POST['category'], request.POST['start_date_time'],
                     request.POST['venue'],request.POST['capacity']
@@ -83,8 +86,8 @@ def join(request,activity_id):
     Return:
         HTTP response redirect to the main page. 
     '''
-    #Check if user is logged in
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         with connection.cursor() as cursor:
             cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
@@ -98,33 +101,30 @@ def user_activity(request):
     user_activity view function that is responsible for the user_activity page.
     Takes in the request and the username of the user and returns the rendering 
     of the user_activity page. 
+
+    # NOTE: the function for deleting events is refactored out for better code clarity. 
     Argument:
         request: HTTP request
     Return: 
         render function: renders the user_activity page (path: /user_activity)
     '''
     user_email = request.session.get("email", False)
+
     if user_email is not False:
+
         # need a dictionary to store some of the information that is needed to be passed to the html pages 
         context = dict()
 
         with connection.cursor() as cursor:
-            """"
-            # Get the name of the user, need to fix the login part first to proceed 
-            cursor.execute('SELECT full_name FROM users WHERE email = %s',[
-                request.session.get('email')
-            ])
-            user_fullname = cursor.fetchone()
-            """
-
-            # Get the table of activities where the current user is the inviter, need to fix the login part first to proceed 
-            cursor.execute('SELECT * FROM activity WHERE inviter = %s',[
+            
+            # Get the table of activities where the current user is the inviter
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s',[
                 request.session.get('email')
             ])
             inviter_list = cursor.fetchall()
 
-            # Get the table of activities where the user has joined in, need to fix the login part first to proceed 
-            cursor.execute('SELECT a.activity_id, a.inviter, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a WHERE j.activity_id = a.activity_id AND j.participant = %s', [
+            # Get the table of activities where the user has joined in
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s', [
                 request.session.get('email')
             ])
             joined_activities_list = cursor.fetchall()
@@ -134,11 +134,24 @@ def user_activity(request):
         context['joined_activities_list'] = joined_activities_list
 
         return render(request,'user_activity.html',context)
+
     else:
         return HttpResponseRedirect(reverse("index"))
 
 def update_activity(request,activity_id):
+    '''
+    update_activity view function responsible for the update activity page.
+    Takes in the request and activity_id of the event and returns a render function
+    that renders the update_activity page. Executes SQL statement to update the values
+    inside the activity table.
+    Argument:
+        request: HTTP request
+        activity_id: the activity id of the event
+    Return: 
+        render function: renders the update activity page (path: /update_activity)
+    ''' 
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         if request.method == 'POST': # TODO: catch error when there's no post method, e.g. cancel to create activity
             with connection.cursor() as cursor:
@@ -153,11 +166,22 @@ def update_activity(request,activity_id):
     return HttpResponseRedirect(reverse("index"))
 
 def delete_activity(request,activity_id):
+    '''
+    delete_activity view function which is responsible for the delete button 
+    in the user_activity page. Takes in the request and activity_id of the event
+    and executes a SQL statement to delete the activity from the user's display.
+    Argument: 
+        request: HTTP request
+        activity_id: the activity_id of the event
+    Return:
+        HTTP Response Redirect to the main page
+    '''
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         with connection.cursor() as cursor:
 
-            # Execute SQL query to delete the user from joining the activity, need to fix the login part to proceed 
+            # Execute SQL query to delete the user from joining the activity
             cursor.execute('DELETE FROM joins WHERE activity_id = %s AND participant = %s', [
                 activity_id, request.session.get('email')
             ])
@@ -167,39 +191,64 @@ def delete_activity(request,activity_id):
 
 def participants(request,activity_id):
     """ 
-    Method that enables people who have signed up in the activity to view everyone else who signed up.
+    View function that enables people who have signed up in the activity to view everyone else who signed up.
+    Takes in the request and activity_id of the event and returns a render function that renders the 
+    participants page. 
+    Arguments:
+        request: HTTP request
+        activity_id: activity_id of the event
+    Return:
+        render function: render the participants page (path: /participants/<activity_id>)
     """
+    # context dicitonary to store the values 
     context={}
     user_email = request.session.get("email", False)
+
     if user_email is not False:
+
         with connection.cursor() as cursor:
             # Execute SQL query to check if user is registered under this activity
             cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [
                 activity_id, user_email
             ])
             user=cursor.fetchone()
+
         if user is not None:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
                 [int(activity_id),user_email])
                 participants=cursor.fetchall()
+
                 cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
-                activity_name,inviter=cursor.fetchone()
-                context["participants"]=participants
-                context["activity_name"]=activity_name
-                context["inviter"]=inviter
+                activity_name,inviter = cursor.fetchone()
+
+                context["participants"] = participants
+                context["activity_name"] = activity_name
+                context["inviter"] = inviter
+
             return render(request,'participants.html',context)
-    #to add additional message saying user is not registered for the activity        
+
+    # TODO:to add additional message saying user is not registered for the activity        
     return HttpResponseRedirect(reverse("index"))
 
-
 def create_review(request):
+    '''
+    create_review view function which is responsible for the creating review page.
+    Takes in the request and returns a render function to render the review page.
+    Argument: 
+        request: HTTP request
+    Return: 
+        render function: renders the review page (path: /create_review)
+    '''
     user_email = request.session.get("email", False)
+
     if user_email is not False:
+
         if request.method =='POST':
+
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
-                    request.POST['activity_id'],datetime.datetime.now(),request.POST['participant'],
+                    request.POST['activity_id'],datetime.datetime.now(),user_email,
                     request.POST['comment']
                 ])
 
@@ -208,13 +257,27 @@ def create_review(request):
         return HttpResponseRedirect(reverse("index"))
 
 def create_report(request):
+    '''
+    create_report view function which is responsible for the reports page.
+    Takes in the request and returns a render function to render the reports page.
+    Argument: 
+        request: HTTP request
+    Return:
+        render function: renders the reports page (path: /create_report)
+    '''
     user_email = request.session.get("email", False)
+
     if user_email is not False:
         if request.method =='POST':
             
             with connection.cursor() as cursor:
+                cursor.execute('SELECT email FROM user WHERE username = %s ',[
+                    request.POST['username']
+                ])
+                email = cursor.fetchone()
+
                 cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
-                    request.POST['submitter'],datetime.datetime.now(),request.POST['user'],
+                    user_email,datetime.datetime.now(),email,
                     request.POST['comment'],request.POST['severity']
                 ])
 
@@ -222,7 +285,44 @@ def create_report(request):
     else:
         return HttpResponseRedirect(reverse("index"))
 
+def index_admin(request):
+    '''
+    index_admin view function that is responsible for the rendering of the administrator's page.
+    Takes in a request and returns the rendering of the administrator's page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the administrator's main page
+    '''
+    # dictionary to store all the values
+    context = dict()
 
+    with connection.cursor() as cursor:
+        # Get the list of users 
+        cursor.execute('SELECT * FROM users')
+        list_of_users = cursor.fetchall()
+
+        # Get the list of activities
+        cursor.execute('SELECT * FROM activity')
+        list_of_activities = cursor.fetchall()
+
+        # Get the list of reviews
+        cursor.execute('SELECT * FROM review')
+        list_of_reviews = cursor.fetchall()
+
+        # Get the list of reports 
+        cursor.execute('SELECT * FROM report')
+        list_of_reports = cursor.fetchall()
+
+    context = {
+        'users' : list_of_users,
+        'activities' : list_of_activities,
+        'reviews' : list_of_reviews,
+        'reports' : list_of_reports
+    }
+    return render(request, 'index_admin.html', context)
+
+# View functions for login and register functions 
 def login_view(request):
     #Check if user is already signed in
     if request.session.get("email",False) is not False:
@@ -238,24 +338,32 @@ def login_view(request):
             cursor.execute('SELECT * FROM users WHERE username=%s AND password=%s',[user_id,password])
             user2 = cursor.fetchone()
         
-        if user1 or user2 is not None:
-            #User logged in by email
+        if user1 is not None or user2 is not None:
+
+            # User logged in by email
             if user1 is not None:
                 request.session["email"] = user_id
                 with connection.cursor() as cursor:
-                    cursor.execute('SELECT username,full_name FROM users WHERE email = %s', [user_id])
-                    username,full_name = cursor.fetchone()
+                    cursor.execute('SELECT username,full_name,type FROM users WHERE email = %s', [user_id])
+                    username,full_name,type = cursor.fetchone()
                     request.session["username"] = username
-                    request.session["full_name"]= full_name
-            #User logged in by username
+                    request.session["full_name"] = full_name
+                    request.session["type"] = type
+
+            # User logged in by username
             else:
                 request.session["username"] = user_id
                 with connection.cursor() as cursor:
-                    cursor.execute('SELECT email,full_name FROM users WHERE username = %s', [user_id])
-                    email,full_name = cursor.fetchone()
+                    cursor.execute('SELECT email,full_name,type FROM users WHERE username = %s', [user_id])
+                    email,full_name,type = cursor.fetchone()
                     request.session["email"] = email
-                    request.session["full_name"]=full_name
-            return HttpResponseRedirect(reverse("index"))
+                    request.session["full_name"] = full_name
+                    request.session["type"] = type
+
+            if request.session["type"] == 'administrator':
+                return HttpResponseRedirect(reverse("index_admin"))
+            else:
+                return HttpResponseRedirect(reverse("index"))
         
         #No matching user-password combination found
         else:
@@ -300,8 +408,11 @@ def register(request):
                     cursor.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s, 'member')"
                             , [request.POST['full_name'], request.POST['username'], request.POST['email'],
                             request.POST['phone_number'],request.POST['password']])
-                    with connection.cursor() as cursor:
-                        cursor.execute("INSERT INTO member VALUES %s", [request.POST['email']])
+
+                    cursor.execute("INSERT INTO member VALUES (%s)", [
+                        request.POST['email']
+                    ])
+
                     return redirect('index')
                 else:
                     status = 'Customer with username %s already exists' % (request.POST['username'])    
@@ -329,11 +440,6 @@ def forget_password(request):
                 fail_silently=False, html_message=html_message)
                 return render(request,"reset_password_email_sent.html")
     return render(request,"forget_password.html")
-
-
-
-
-
 
 def reset_password(request):
     if request.method == "POST":
