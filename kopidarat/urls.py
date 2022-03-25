@@ -36,7 +36,7 @@ urlpatterns = [
     path("join/<int:activity_id>", views.join, name="join"), 
 
     # Current User Activity Page 
-    path("user_activity",views.user_activity, name='user_activity'),
+    path("account",views.user_activity, name='account'),
     path("update_activity/<int:activity_id>",views.update_activity, name='update_activity'),
     path("delete_activity/<int:activity_id>", views.delete_activity, name = 'delete_activity'),
     path("participants/<int:activity_id>", views.participants, name = 'participants'),
