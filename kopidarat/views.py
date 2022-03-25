@@ -9,7 +9,7 @@ from django.template import loader
 # Custom imports 
 import datetime
 
-# View Functions for main pages of the website  
+# View Functions for main pages for the member's side of the website 
 def index(request):
     '''
     Index view function responsible for the main page of the website.
@@ -50,7 +50,7 @@ def create_activity(request):
     user_email = request.session.get("email", False)
 
     if user_email is not False:
-        if request.method == 'POST': # TODO: catch error when there's no post method, e.g. cancel to create activity
+        if request.method == 'POST': 
 
             with connection.cursor() as cursor:
 
@@ -87,21 +87,23 @@ def join(request,activity_id):
         HTTP response redirect to the main page. 
     '''
     user_email = request.session.get("email", False)
+    message = ''
 
     if user_email is not False:
+
         with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=',[
+            cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s',[
                 activity_id,user_email
             ])
             joined = cursor.fetchone()
 
             if joined is not None:
-                return HttpResponseRedirect(reverse("index",{"message":"You have joined this activity"}))
-
-            cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
+                message = "You have joined this activity"
+            else:
+                cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
                 activity_id,user_email
-            ])
-    return HttpResponseRedirect(reverse("index"))
+                ])
+    return HttpResponseRedirect(reverse("index"),{"message": message})
 
 
 def user_activity(request):
@@ -110,7 +112,7 @@ def user_activity(request):
     Takes in the request and the username of the user and returns the rendering 
     of the user_activity page. 
 
-    # NOTE: the function for deleting events is refactored out for better code clarity. 
+    # NOTE: the function for deleting and updating events is refactored out for better code clarity. 
     Argument:
         request: HTTP request
     Return: 
@@ -138,13 +140,13 @@ def user_activity(request):
             joined_activities_list = cursor.fetchall()
 
             # Get table of reviews that user has created
-            cursor.execute('SELECT r.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = u.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT a.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             reviews_list = cursor.fetchall()
 
             # Get table of reviews that user has created
-            cursor.execute('SELECT r.activity_id, r.timestamp, r.report_user, r.comment, r.severity FROM report r, activity a, users u WHERE r.activity_id = u.activity_id AND r.submitter = u.email AND r.submitter = %s ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT r.timestamp, r.report_user, r.comment, r.severity FROM report r, users u WHERE r.report_user = u.email AND r.submitter = %s ORDER BY r.timestamp ASC', [
                 user_email
             ])
             reports_list = cursor.fetchall()
@@ -307,42 +309,163 @@ def create_report(request):
     else:
         return HttpResponseRedirect(reverse("index"))
 
-def index_admin(request):
+# View functions for the admin side of the website 
+def admin_index(request):
     '''
     index_admin view function that is responsible for the rendering of the administrator's page.
     Takes in a request and returns the rendering of the administrator's page.
     Argument:
         request: HTTP request
     Return:
-        render function: renders the administrator's main page
+        render function: renders the administrator's main page (path: /admin_index)
     '''
-    # dictionary to store all the values
-    context = dict()
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
 
-    with connection.cursor() as cursor:
-        # Get the list of users 
-        cursor.execute('SELECT * FROM users')
-        list_of_users = cursor.fetchall()
+    if user_type == 'administrator' and user_email is not False:
 
-        # Get the list of activities
-        cursor.execute('SELECT * FROM activity')
-        list_of_activities = cursor.fetchall()
+        # dictionary to store all the values
+        context = dict()
 
-        # Get the list of reviews
-        cursor.execute('SELECT * FROM review')
-        list_of_reviews = cursor.fetchall()
+        # TODO: Need to change these queries to complex queries for admin statistics 
+        with connection.cursor() as cursor:
+            # Get the list of users 
+            cursor.execute('SELECT * FROM users')
+            list_of_users = cursor.fetchall()
 
-        # Get the list of reports 
-        cursor.execute('SELECT * FROM report')
-        list_of_reports = cursor.fetchall()
+            # Get the list of activities
+            cursor.execute('SELECT * FROM activity')
+            list_of_activities = cursor.fetchall()
 
-    context = {
-        'users' : list_of_users,
-        'activities' : list_of_activities,
-        'reviews' : list_of_reviews,
-        'reports' : list_of_reports
-    }
-    return render(request, 'index_admin.html', context)
+            # Get the list of reviews
+            cursor.execute('SELECT * FROM review')
+            list_of_reviews = cursor.fetchall()
+
+            # Get the list of reports 
+            cursor.execute('SELECT * FROM report')
+            list_of_reports = cursor.fetchall()
+
+        context = {
+            'users' : list_of_users,
+            'activities' : list_of_activities,
+            'reviews' : list_of_reviews,
+            'reports' : list_of_reports
+        }
+        return render(request, 'admin_index.html', context)
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+def admin_user(request):
+    '''
+    user_admin view function responsible for the list of users page from the admin side.
+    Takes in the request and returns the rendering of the admin_user page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user page (path: /admin_user)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        # TODO: Make a CRUD for the admin site 
+        with connection.cursor() as cursor:
+            # Get the list of users 
+            cursor.execute('SELECT * FROM users')
+            list_of_users = cursor.fetchall()
+        
+        context['list_of_users'] = list_of_users
+
+        return render(request,'admin_user.html',context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_activity(request):
+    '''
+    user_activity view function responsible for the list of activities page from the admin side.
+    Takes in the request and returns the rendering of the admin_activity page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_activity page (path: /admin_activity)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        # TODO: Make a CRUD for the admin site 
+        with connection.cursor() as cursor:
+            # Get the list of users 
+            cursor.execute('SELECT * FROM activity')
+            list_of_activities = cursor.fetchall()
+        
+        context['list_of_activities'] = list_of_activities
+
+        return render(request,'admin_activity.html',context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_review(request):
+    '''
+    user_review view function responsible for the list of reviews page from the admin side.
+    Takes in the request and returns the rendering of the admin_review page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_review page (path: /admin_review)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        # TODO: Make a CRUD for the admin site 
+        with connection.cursor() as cursor:
+            # Get the list of users 
+            cursor.execute('SELECT * FROM review')
+            list_of_reviews = cursor.fetchall()
+        
+        context['list_of_reviews'] = list_of_reviews
+
+        return render(request,'admin_review.html',context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_report(request):
+    '''
+    user_report view function responsible for the list of reports page from the admin side.
+    Takes in the request and returns the rendering of the admin_report page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_report page (path: /admin_report)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        # TODO: Make a CRUD for the admin site 
+        with connection.cursor() as cursor:
+            # Get the list of users 
+            cursor.execute('SELECT * FROM report')
+            list_of_reports = cursor.fetchall()
+        
+        context['list_of_reports'] = list_of_reports
+
+        return render(request,'admin_report.html',context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
 
 # View functions for login and register functions 
 def login_view(request):
@@ -383,18 +506,17 @@ def login_view(request):
                     request.session["type"] = type
 
             if request.session["type"] == 'administrator':
-                return HttpResponseRedirect(reverse("index_admin"))
+                return HttpResponseRedirect(reverse("admin_index"))
             else:
                 return HttpResponseRedirect(reverse("index"))
         
-        #No matching user-password combination found
+        # No matching user-password combination found
         else:
             return render(request, "login.html", {
                 "message": "Invalid username and/or password."
             })
     else:
         return render(request, "login.html",{"message":"Please login to view our site."})
-
 
 def logout_view(request):
     if "email" in request.session:

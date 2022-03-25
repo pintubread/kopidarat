@@ -1,0 +1,26 @@
+{% load static %}
+<html>
+  <body>
+    <h2>List of users using the app</h2>
+    <br />
+    <a href="/admin_index"> Back to Main Page </a>
+    <table border="1">
+      <thead>
+        <th>Full Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Phone Number</th>
+        <th>Type</th>
+      </thead>
+      {% for user in list_of_users %}
+      <tr>
+        <td>{{ user.0 }}</td>
+        <td>{{ user.1 }}</td>
+        <td>{{ user.2 }}</td>
+        <td>{{ user.3 }}</td>
+        <td>{{ user.5 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

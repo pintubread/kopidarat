@@ -1,0 +1,24 @@
+{% load static %}
+<html>
+  <body>
+    <h2>List of reviews of the activities</h2>
+    <br />
+    <a href="/admin_index"> Back to Main Page </a>
+    <table border="1">
+      <thead>
+        <th>Activity ID</th>
+        <th>Timestamp</th>
+        <th>Participant</th>
+        <th>Comment</th>
+      </thead>
+      {% for review in list_of_reviews %}
+      <tr>
+        <td>{{ review.0 }}</td>
+        <td>{{ review.1 }}</td>
+        <td>{{ review.2 }}</td>
+        <td>{{ review.3 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

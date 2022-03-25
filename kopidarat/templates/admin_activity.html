@@ -1,0 +1,30 @@
+{% load static %}
+<html>
+  <body>
+    <h2>List of activities</h2>
+    <br />
+    <a href="/admin_index"> Back to Main Page </a>
+    <table border="1">
+      <thead>
+        <th>Activity ID</th>
+        <th>Activity Name</th>
+        <th>Inviter</th>
+        <th>Category</th>
+        <th>Start Date Time</th>
+        <th>Venue</th>
+        <th>Capacity</th>
+      </thead>
+      {% for activity in list_of_activities %}
+      <tr>
+        <td>{{ activity.0 }}</td>
+        <td>{{ activity.3 }}</td>
+        <td>{{ activity.1 }}</td>
+        <td>{{ activity.2 }}</td>
+        <td>{{ activity.4 }}</td>
+        <td>{{ activity.5 }}</td>
+        <td>{{ activity.6 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

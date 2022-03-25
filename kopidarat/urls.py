@@ -20,9 +20,15 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # Main Page
+    # Main pages (both for members and administrators)
     path('', views.index, name='index'),
-    path('index_admin', views.index_admin, name='index_admin'),
+    path('admin_index', views.admin_index, name='admin_index'),
+
+    # Administrator pages
+    path('admin_user', views.admin_user, name='admin_user'),
+    path('admin_activity', views.admin_activity, name='admin_activity'),
+    path('admin_review', views.admin_review, name='admin_review'),
+    path('admin_report', views.admin_report, name='admin_report'),
     
     # Authentication pages 
     path("login", views.login_view, name="login"),
@@ -36,7 +42,7 @@ urlpatterns = [
     path("join/<int:activity_id>", views.join, name="join"), 
 
     # Current User Activity Page 
-    path("account",views.user_activity, name='account'),
+    path("user_activity",views.user_activity, name='user_activity'),
     path("update_activity/<int:activity_id>",views.update_activity, name='update_activity'),
     path("delete_activity/<int:activity_id>", views.delete_activity, name = 'delete_activity'),
     path("participants/<int:activity_id>", views.participants, name = 'participants'),

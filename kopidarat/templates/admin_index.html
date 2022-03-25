@@ -1,0 +1,27 @@
+{% load static %}
+<html>
+  <head>
+    <title>Welcome to KopiDarat</title>
+  </head>
+  <body>
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
+    <h1>Hello {{full_name}}!</h1>
+    <h2>Welcome to the administrator view of KopiDarat!</h2>
+    <br /><br />
+    <a href="logout"> Logout </a>
+    <br /><br />
+    <h4>To see the list of users, click below</h4>
+    <a href="/admin_user"> List of users </a>
+    <br /><br />
+    <h4>To see the list of activities, click below</h4>
+    <a href="/admin_activity"> List of activities </a>
+    <br /><br />
+    <h4>To see the list of reviews, click below</h4>
+    <a href="/admin_review"> List of reviews </a>
+    <br /><br />
+    <h4>To see the list of reports, click below</h4>
+    <a href="/admin_report"> List of reports </a>
+  </body>
+</html>

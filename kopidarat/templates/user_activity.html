@@ -21,6 +21,7 @@
         <th>Venue</th>
         <th>Capacity</th>
         <th>Edit Activity</th>
+        <th>Participants List</th>
       </thead>
       {% for activity in inviter_list %}
       <tr>
@@ -46,7 +47,7 @@
             href="participants/{{ activity.0 }}"
             class="text-decoration-none"
           >
-            Edit
+            Participants List
           </a>
         </td>
       </tr>
@@ -86,7 +87,6 @@
         </td>
       </tr>
       {% endfor %}
-      
     </table>
 
     <br /><br />
@@ -112,7 +112,6 @@
     <br />
     <table border="1">
       <thead>
-        <th>Activity ID</th>
         <th>Timestamp</th>
         <th>User Reported</th>
         <th>Comment</th>
@@ -124,7 +123,6 @@
         <td>{{ report.1 }}</td>
         <td>{{ report.2 }}</td>
         <td>{{ report.3 }}</td>
-        <td>{{ report.4 }}</td>
       </tr>
       {% endfor %}
     </table>
