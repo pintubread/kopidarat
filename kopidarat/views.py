@@ -90,8 +90,16 @@ def join(request,activity_id):
 
     if user_email is not False:
         with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=',[
+                activity_id,user_email
+            ])
+            joined = cursor.fetchone()
+
+            if joined is not None:
+                return HttpResponseRedirect(reverse("index",{"message":"You have joined this activity"}))
+
             cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
-                activity_id,request.session.get("email")
+                activity_id,user_email
             ])
     return HttpResponseRedirect(reverse("index"))
 
@@ -106,7 +114,7 @@ def user_activity(request):
     Argument:
         request: HTTP request
     Return: 
-        render function: renders the user_activity page (path: /user_activity)
+        render function: renders the user_activity page (path: /account)
     '''
     user_email = request.session.get("email", False)
 
@@ -118,20 +126,34 @@ def user_activity(request):
         with connection.cursor() as cursor:
             
             # Get the table of activities where the current user is the inviter
-            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s',[
-                request.session.get('email')
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s ORDER BY a.start_date_time ASC',[
+                user_email
             ])
             inviter_list = cursor.fetchall()
 
             # Get the table of activities where the user has joined in
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s', [
-                request.session.get('email')
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s ORDER BY a.start_date_time ASC', [
+                user_email
             ])
             joined_activities_list = cursor.fetchall()
+
+            # Get table of reviews that user has created
+            cursor.execute('SELECT r.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = u.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
+                user_email
+            ])
+            reviews_list = cursor.fetchall()
+
+            # Get table of reviews that user has created
+            cursor.execute('SELECT r.activity_id, r.timestamp, r.report_user, r.comment, r.severity FROM report r, activity a, users u WHERE r.activity_id = u.activity_id AND r.submitter = u.email AND r.submitter = %s ORDER BY a.start_date_time ASC', [
+                user_email
+            ])
+            reports_list = cursor.fetchall()
 
         context['user_fullname'] = request.session.get('full_name')
         context['inviter_list'] = inviter_list
         context['joined_activities_list'] = joined_activities_list
+        context['reviews_list'] = reviews_list
+        context['reports_list'] = reports_list
 
         return render(request,'user_activity.html',context)
 
@@ -160,7 +182,7 @@ def update_activity(request,activity_id):
                 cursor.execute('UPDATE activity SET activity_name = %s, category = %s, start_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
                     request.POST['activity_name'],request.POST['category'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity'],activity_id
                 ])
-            return HttpResponseRedirect(reverse("user_activity"))
+            return HttpResponseRedirect(reverse("account"))
         else:
             return render(request, 'update_activity.html')
     return HttpResponseRedirect(reverse("index"))
@@ -185,7 +207,7 @@ def delete_activity(request,activity_id):
             cursor.execute('DELETE FROM joins WHERE activity_id = %s AND participant = %s', [
                 activity_id, request.session.get('email')
             ])
-        return HttpResponseRedirect(reverse("user_activity"))
+        return HttpResponseRedirect(reverse("account"))
     else:
         return HttpResponseRedirect(reverse("index"))
 
