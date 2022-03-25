@@ -271,7 +271,7 @@ def create_report(request):
         if request.method =='POST':
             
             with connection.cursor() as cursor:
-                cursor.execute('SELECT email FROM user WHERE username = %s ',[
+                cursor.execute('SELECT email FROM users WHERE username = %s ',[
                     request.POST['username']
                 ])
                 email = cursor.fetchone()
