@@ -4,8 +4,11 @@ SELECT * FROM administrator;
 SELECT * FROM category;
 SELECT * FROM activity;
 SELECT * FROM joins;
+SELECT * FROM report;
+SELECT * FROM review;
 
 DROP TABLE joins;
+DROP TABLE report;
 DROP TABLE review;
 DROP TABLE report;
 DROP TABLE activity;
