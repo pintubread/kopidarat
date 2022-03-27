@@ -29,6 +29,9 @@ urlpatterns = [
     path('admin_activity', views.admin_activity, name='admin_activity'),
     path('admin_review', views.admin_review, name='admin_review'),
     path('admin_report', views.admin_report, name='admin_report'),
+
+    #friendly front page that is accessible to both users and non-users
+    path('frontpage',views.frontpage,name='frontpage'),
     
     # Authentication pages 
     path("login", views.login_view, name="login"),

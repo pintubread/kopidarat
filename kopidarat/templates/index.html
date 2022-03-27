@@ -7,7 +7,7 @@
     {% if message %}
     <div>{{ message }}</div>
     {% endif %}
-    <h1>Hello {{full_name}}!</h1>  
+    <<h1>Hello {{full_name}}!</h1>  
     <h2> Available Activities </h2>
     <br /><br />
     <a href='create_activity'> New Activity </a>
@@ -39,7 +39,7 @@
         <td> {{ activity.2 }}</td>
         <td> {{ activity.4 }}</td>
         <td> {{ activity.5 }}</td>
-        <td> {{ activity.6 }}</td>
+        <td> {{ activity.6 }}</td>>
         <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
       </tr>
       {% endfor %}

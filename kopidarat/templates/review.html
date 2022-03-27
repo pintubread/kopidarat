@@ -7,6 +7,10 @@
     <h2>Add New Review</h2>
     <a href="/">Back to home</a>
 
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
+
     <form action="{% url 'review' %}" method="post">
       {% csrf_token %}
       <div class="form-group">

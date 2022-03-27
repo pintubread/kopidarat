@@ -4,6 +4,10 @@
     <h2>Add New Report</h2>
     <a href="/">Back to home</a>
 
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
+    
     <form action="{% url 'report' %}" method="post">
       {% csrf_token %}
       <div class="form-group">
@@ -23,12 +27,20 @@
         />
       </div>
       <div class="form-group">
-        <input
+        <!--
+          <input
           class="form-control"
           type="text"
           name="severity"
           placeholder="Medium"
         />
+        -->
+        <select id="severity" name="severity">
+          <option value="low">low</option>
+          <option value="medium">medium</option>
+          <option value="high">high</option>
+        </select>
+
       </div>
       <input class="btn btn-primary" type="submit" value="Submit Report" />
     </form>

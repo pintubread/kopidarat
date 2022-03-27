@@ -116,7 +116,7 @@ def user_activity(request):
     Argument:
         request: HTTP request
     Return: 
-        render function: renders the user_activity page (path: /account)
+        render function: renders the user_activity page
     '''
     user_email = request.session.get("email", False)
 
@@ -184,7 +184,7 @@ def update_activity(request,activity_id):
                 cursor.execute('UPDATE activity SET activity_name = %s, category = %s, start_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
                     request.POST['activity_name'],request.POST['category'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity'],activity_id
                 ])
-            return HttpResponseRedirect(reverse("account"))
+            return HttpResponseRedirect(reverse("user_activity"))
         else:
             return render(request, 'update_activity.html')
     return HttpResponseRedirect(reverse("index"))
@@ -209,7 +209,7 @@ def delete_activity(request,activity_id):
             cursor.execute('DELETE FROM joins WHERE activity_id = %s AND participant = %s', [
                 activity_id, request.session.get('email')
             ])
-        return HttpResponseRedirect(reverse("account"))
+        return HttpResponseRedirect(reverse("user_activity"))
     else:
         return HttpResponseRedirect(reverse("index"))
 
@@ -238,19 +238,19 @@ def participants(request,activity_id):
             user=cursor.fetchone()
 
         if user is not None:
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
-                [int(activity_id),user_email])
-                participants=cursor.fetchall()
+            cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
+            [int(activity_id),user_email])
+            participants=cursor.fetchall()
 
-                cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
-                activity_name,inviter = cursor.fetchone()
+            cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
+            activity_name,inviter = cursor.fetchone()
 
-                context["participants"] = participants
-                context["activity_name"] = activity_name
-                context["inviter"] = inviter
-
+            context["participants"] = participants
+            context["activity_name"] = activity_name
+            context["inviter"] = inviter
             return render(request,'participants.html',context)
+        else:
+            return HttpResponseRedirect(reverse("user_activity"))
 
     # TODO:to add additional message saying user is not registered for the activity        
     return HttpResponseRedirect(reverse("index"))
@@ -265,18 +265,31 @@ def create_review(request):
         render function: renders the review page (path: /create_review)
     '''
     user_email = request.session.get("email", False)
-
+    message=""
     if user_email is not False:
 
         if request.method =='POST':
 
             with connection.cursor() as cursor:
-                cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
-                    request.POST['activity_id'],datetime.datetime.now(),user_email,
-                    request.POST['comment']
-                ])
+                cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [
+                request.POST['activity_id'], user_email
+            ])
+                joined = cursor.fetchone()
+                if joined is not None:
+                    cursor.execute('SELECT * FROM activity WHERE activity_id=%s AND start_date_time<now()', [
+                    request.POST['activity_id']])
+                    happened = cursor.fetchone()
+                    if happened is not None: 
+                        cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
+                            request.POST['activity_id'],datetime.datetime.now(),user_email,
+                            request.POST['comment']
+                        ])
+                    else:
+                        message = "The activity has yet to take place, hence you cannot give a review."
+                else:
+                    message="You are unable to give a review -- either the activity id does not exist, or you were never registered for the activity"
 
-        return render(request, 'review.html')
+        return render(request, 'review.html',{"message":message})
     else:
         return HttpResponseRedirect(reverse("index"))
 
@@ -290,6 +303,7 @@ def create_report(request):
         render function: renders the reports page (path: /create_report)
     '''
     user_email = request.session.get("email", False)
+    message=""
 
     if user_email is not False:
         if request.method =='POST':
@@ -299,13 +313,14 @@ def create_report(request):
                     request.POST['username']
                 ])
                 email = cursor.fetchone()
-
-                cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
-                    user_email,datetime.datetime.now(),email,
-                    request.POST['comment'],request.POST['severity']
-                ])
-
-        return render(request,'report.html')
+                if email is not None:
+                    cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
+                        user_email,datetime.datetime.now(),email,
+                        request.POST['comment'],request.POST['severity']
+                    ])
+                else:
+                    message="Username does not exist. Please try again."
+        return render(request,'report.html',{"message":message})
     else:
         return HttpResponseRedirect(reverse("index"))
 
@@ -373,7 +388,8 @@ def admin_user(request):
 
         # TODO: Make a CRUD for the admin site 
         with connection.cursor() as cursor:
-            # Get the list of users 
+            # Get the list of users
+            # Find out last activity of users 
             cursor.execute('SELECT * FROM users')
             list_of_users = cursor.fetchall()
         
@@ -467,7 +483,35 @@ def admin_report(request):
     else:
         return HttpResponseRedirect(reverse('admin_index'))
 
-# View functions for login and register functions 
+#View function for category popularity list
+def frontpage(request):
+    '''
+    frontpage view function is a friendly front page for the website
+    that introduces a little of what KopiDarat is about and displays 
+    general stats of the website to get new visitors interested,
+    from the number of activities, number of registered users,
+    and the list of activity categories with its respective popularity
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the category_popularity page (path: /category_popularity)
+    '''
+    context={}
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT COUNT(*) FROM activity')
+        activity_count=cursor.fetchone()[0]
+        cursor.execute('SELECT COUNT(*) FROM users')
+        user_count=cursor.fetchone()[0]
+        cursor.execute('SELECT category, COUNT(*) FROM activity GROUP BY category ORDER BY COUNT(*) DESC')
+        categories = cursor.fetchall()
+
+        context["activity_count"]=activity_count
+        context["user_count"]=user_count
+        context["categories"] = categories
+        return render(request,'frontpage.html',context)
+        
+
+# View functions for login functions 
 def login_view(request):
     #Check if user is already signed in
     if request.session.get("email",False) is not False:

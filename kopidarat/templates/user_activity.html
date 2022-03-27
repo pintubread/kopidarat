@@ -6,6 +6,9 @@
     <h1>Hello {{user_fullname}}!</h1>
     <br />
     <br />
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
     <a href="/"> Back to Main Page </a>
     <br />
     <br />
