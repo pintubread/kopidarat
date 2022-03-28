@@ -1,7 +1,7 @@
 {% load static %}
 <html>
   <head>
-    <title> Welcome to KopiDarat </title>
+    <title> Welcome to KopiDarat! </title>
   </head>
   <body>
     {% if message %}
@@ -9,17 +9,29 @@
     {% endif %}
     <<h1>Hello {{full_name}}!</h1>  
     <h2> Available Activities </h2>
-    <br /><br />
+    <form action="{% url 'index' %}" method="post">
+      {% csrf_token %}
+      <label for="category_id" class="control-label requiredField">Categories (multi-select with ctrl)</label> 
+      <div class="controls"><select name="categories" id="categories" multiple size="10">
+        {% for category in categories %}
+        <option value= "{{category.0}}" >{{category.0}}</option>
+        {% endfor %} 
+        </select> </div>
+      <button type="submit">Apply Filter</button>
+      <a href = "{% url 'index' %}">Clear Selections</a>
+      </form>
+    </div>
+
     <a href='create_activity'> New Activity </a>
-    <br/><br/>
+    <br/><br>
     <a href='review'> New Review </a>
-    <br/><br/>
+    <br/><br>
     <a href='report'> New Report </a>
-    <br/><br/>
+    <br/><br>
     <a href='user_activity'> Your Activities </a>
-    <br/><br/>
+    <br/><br>
     <a href='logout'> Logout </a>
-    <br/><br/>
+    <br/><br>
     <table border=1>
       <thead>
           <th> Activity ID</th>

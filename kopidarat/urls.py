@@ -21,17 +21,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Main pages (both for members and administrators)
-    path('', views.index, name='index'),
+    path('index', views.index, name='index'),
     path('admin_index', views.admin_index, name='admin_index'),
+
+    #friendly front page that is accessible to both users and non-users
+    path('',views.frontpage,name='frontpage'),
 
     # Administrator pages
     path('admin_user', views.admin_user, name='admin_user'),
     path('admin_activity', views.admin_activity, name='admin_activity'),
     path('admin_review', views.admin_review, name='admin_review'),
     path('admin_report', views.admin_report, name='admin_report'),
-
-    #friendly front page that is accessible to both users and non-users
-    path('frontpage',views.frontpage,name='frontpage'),
     
     # Authentication pages 
     path("login", views.login_view, name="login"),

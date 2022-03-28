@@ -25,17 +25,35 @@ def index(request):
     user_email = request.session.get("email", False)
 
     if user_email is not False:
-        # Get all activities data from the database
         with connection.cursor() as cursor:
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND %s < a.start_date_time ORDER BY a.start_date_time ASC', [datetime.datetime.now()])
-            activities = cursor.fetchall()
+            cursor.execute('SELECT * FROM category')
+            categories = cursor.fetchall()
+
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND now() < a.start_date_time"
+        ordering_sql =  " ORDER BY a.start_date_time ASC"
+        #filtering method
+        if request.method == "POST":
+            categories = request.POST.getlist('categories')
+            filters = ''
+            for category in categories:
+                filters+= " OR a.category="+"'"+category+"'"
+            filters=" AND("+filters[3:]+")"
+            with connection.cursor() as cursor:
+                cursor.execute(all_activities_sql+filters+ordering_sql)
+                activities = cursor.fetchall()
+
+        # Get all activities data from the database
+        else:
+            with connection.cursor() as cursor:
+                cursor.execute(all_activities_sql+ordering_sql)
+                activities = cursor.fetchall()
 
         # Put all the records inside the dictionary context
-        context = {'records' : activities,'full_name':request.session.get("full_name")}
+        context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories}
 
         return render(request,"index.html", context)
     else:
-        return HttpResponseRedirect(reverse("login"))
+        return HttpResponseRedirect(reverse("frontpage"))
 
 def create_activity(request):
     '''
@@ -50,6 +68,12 @@ def create_activity(request):
     user_email = request.session.get("email", False)
 
     if user_email is not False:
+        context={}
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM category')
+            categories = cursor.fetchall()
+            context["categories"]=categories
+
         if request.method == 'POST': 
 
             with connection.cursor() as cursor:
@@ -71,8 +95,9 @@ def create_activity(request):
                 cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
                     activity_id,request.session.get("email")
                 ])
+                return HttpResponseRedirect(reverse("user_activity"))
         else:
-            return render(request, 'create_activity.html')
+            return render(request, 'create_activity.html',context)
     return HttpResponseRedirect(reverse("index"))
 
 def join(request,activity_id):
