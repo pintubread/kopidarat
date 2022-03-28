@@ -34,7 +34,7 @@ def index(request):
         #filtering method
         if request.method == "POST":
             categories = request.POST.getlist('categories')
-            filters = ''
+            filters = ""
             for category in categories:
                 filters+= " OR a.category="+"'"+category+"'"
             filters=" AND("+filters[3:]+")"
