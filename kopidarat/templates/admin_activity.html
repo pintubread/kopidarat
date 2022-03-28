@@ -13,6 +13,8 @@
         <th>Start Date Time</th>
         <th>Venue</th>
         <th>Capacity</th>
+        <th>Edit Activity</th>
+        <th>Delete Activity</th>
       </thead>
       {% for activity in list_of_activities %}
       <tr>
@@ -23,6 +25,24 @@
         <td>{{ activity.4 }}</td>
         <td>{{ activity.5 }}</td>
         <td>{{ activity.6 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_activity_edit/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Edit
+          </a>
+        </td>
+        <td>
+          <a
+            class="button"
+            href="admin_activity_delete/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Delete
+          </a>
+        </td>
       </tr>
       {% endfor %}
     </table>

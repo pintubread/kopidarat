@@ -11,6 +11,8 @@
         <th>Email</th>
         <th>Phone Number</th>
         <th>Type</th>
+        <th>Edit User</th>
+        <th>Delete User</th>
       </thead>
       {% for user in list_of_users %}
       <tr>
@@ -19,7 +21,26 @@
         <td>{{ user.2 }}</td>
         <td>{{ user.3 }}</td>
         <td>{{ user.5 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_user_edit/{{ user.2 }}"
+            class="text-decoration-none"
+          >
+            Edit
+          </a>
+        </td>
+        <td>
+          <a
+            class="button"
+            href="admin_user_delete/{{ user.0 }}"
+            class="text-decoration-none"
+          >
+            Delete
+          </a>
+        </td>
       </tr>
+
       {% endfor %}
     </table>
   </body>

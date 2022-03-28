@@ -11,6 +11,7 @@
         <th>Reported User</th>
         <th>Comment</th>
         <th>Severity</th>
+        <th>Delete Report</th>
       </thead>
       {% for report in list_of_reports %}
       <tr>
@@ -19,6 +20,15 @@
         <td>{{ report.2 }}</td>
         <td>{{ report.3 }}</td>
         <td>{{ report.4 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_report_delete/{{ report.0 }}/{{ report.1 }}"
+            class="text-decoration-none"
+          >
+            Delete
+          </a>
+        </td>
       </tr>
       {% endfor %}
     </table>

@@ -5,7 +5,7 @@
   </head>
   <body>
     <h2>Update Activity</h2>
-    <a href="/user_activity">Back to your activities</a>
+    <a href="/admin_activity">Back to the list of activities</a>
 
     <form method="POST">
       {% csrf_token %}
@@ -16,6 +16,15 @@
           type="text"
           name="activity_name"
           placeholder="Activity Name"
+        />
+      </div>
+      <div class="form-group">
+        <input
+          class="form-control"
+          autofocus
+          type="text"
+          name="Inviter"
+          placeholder="Inviter"
         />
       </div>
       <div class="form-group">

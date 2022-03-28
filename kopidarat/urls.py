@@ -24,14 +24,20 @@ urlpatterns = [
     path('index', views.index, name='index'),
     path('admin_index', views.admin_index, name='admin_index'),
 
-    #friendly front page that is accessible to both users and non-users
+    # friendly front page that is accessible to both users and non-users
     path('',views.frontpage,name='frontpage'),
 
     # Administrator pages
     path('admin_user', views.admin_user, name='admin_user'),
+    path('admin_user_edit/<str:edit_email>', views.admin_user_edit, name='admin_user_edit'),
+    path('admin_user_delete/<str:delete_email>', views.admin_user_delete, name='admin_user_delete'),
     path('admin_activity', views.admin_activity, name='admin_activity'),
+    path('admin_activity_edit/<int:activity_id>', views.admin_activity_edit, name='admin_activity_edit'),
+    path('admin_activity_delete/<int:activity_id>', views.admin_activity_delete, name='admin_activity_delete'),
     path('admin_review', views.admin_review, name='admin_review'),
+    path('admin_activity_delete/<int:activity_id>/<str:timestamp>/<str:participant_email>', views.admin_review_delete, name='admin_review_delete'),
     path('admin_report', views.admin_report, name='admin_report'),
+    path('admin_report_delete/<str:submitter_email>/<str:timestamp>', views.admin_report_delete, name='admin_report_delete'),
     
     # Authentication pages 
     path("login", views.login_view, name="login"),

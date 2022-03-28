@@ -210,8 +210,10 @@ def update_activity(request,activity_id):
                     request.POST['activity_name'],request.POST['category'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity'],activity_id
                 ])
             return HttpResponseRedirect(reverse("user_activity"))
+
         else:
             return render(request, 'update_activity.html')
+
     return HttpResponseRedirect(reverse("index"))
 
 def delete_activity(request,activity_id):
@@ -367,29 +369,29 @@ def admin_index(request):
         # dictionary to store all the values
         context = dict()
 
-        # TODO: Need to change these queries to complex queries for admin statistics 
         with connection.cursor() as cursor:
-            # Get the list of users 
-            cursor.execute('SELECT * FROM users')
-            list_of_users = cursor.fetchall()
 
-            # Get the list of activities
-            cursor.execute('SELECT * FROM activity')
-            list_of_activities = cursor.fetchall()
+            # Select the top 5 most active users (identified by usernames) based on the number of activities joined
+            cursor.execute('SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join DESC ,u.username ASC LIMIT 5')
+            list_of_active_users = cursor.fetchall()
 
-            # Get the list of reviews
-            cursor.execute('SELECT * FROM review')
-            list_of_reviews = cursor.fetchall()
+            # Select the top 5 most inactive users (identified by usernames) based on the number of activities joined
+            cursor.execute('SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
+            list_of_inactive_users = cursor.fetchall()
 
-            # Get the list of reports 
-            cursor.execute('SELECT * FROM report')
-            list_of_reports = cursor.fetchall()
+            # Select the top 5 activities with the most reviews, by counting the number of reviews 
+            cursor.execute('SELECT a.activity_id,a.activity_name, COUNT(r.comment) AS total_reviews FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY total_reviews DESC, a.activity_id ASC LIMIT 5')
+            list_of_reviewed_activities = cursor.fetchall()
+
+            # Select the 5 most reported users (counted if the severity is medium or high only)
+            cursor.execute("SELECT u.username, COUNT(r.comment) AS total_reports FROM users u, report r WHERE u.email = r.report_user AND (r.severity = 'medium' OR r.severity = 'high') GROUP BY u.username ORDER BY total_reports DESC, u.username ASC LIMIT 5")
+            list_of_user_reports = cursor.fetchall()
 
         context = {
-            'users' : list_of_users,
-            'activities' : list_of_activities,
-            'reviews' : list_of_reviews,
-            'reports' : list_of_reports
+            'list_of_active_users' : list_of_active_users,
+            'list_of_inactive_users' : list_of_inactive_users,
+            'list_of_reviewed_activities' : list_of_reviewed_activities,
+            'list_of_user_reports' : list_of_user_reports
         }
         return render(request, 'admin_index.html', context)
     else:
@@ -424,6 +426,68 @@ def admin_user(request):
     else:
         return HttpResponseRedirect(reverse('admin_index'))
 
+def admin_user_edit(request,edit_email):
+    '''
+    admin_user_edit view function responsible for the editing of user's credentials from the admin side.
+    Takes in the request and the user's email and returns the rendering of the admin_user_edit page.
+    Argument:
+        request: HTTP request
+        edit_email: user email that wants to be edited
+    Return:
+        render function: renders the admin_user_edit page (path: /admin_user_edit/edit_emailg)
+    '''
+    user_email = request.session.get('email',False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST': 
+            
+            with connection.cursor() as cursor:
+
+                cursor.execute('UPDATE users SET full_name = %s, username = %s, phone_number = %s, password = %s, type = %s WHERE email = %s', [
+                    request.POST['full_name'], request.POST['username'],request.POST['phone_number'],request.POST['password'],request.POST['type'], edit_email
+                ])
+
+            return HttpResponseRedirect(reverse('admin_user'))
+        
+        else:
+            return render(request,'admin_user_edit.html')
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_user_delete(request,delete_email):
+    '''
+    admin_user_delete view function responsible for the deleting users from the database from the admin side.
+    Takes in the request and the user's email and executes a SQL query to delete the user from the database.
+    Argument:
+        request: HTTP request
+        delete_email: user email that wants to be deleted
+    Return: 
+        HTTP Response Redirect to the admin_user page
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                cursor.execute('SELECT type FROM users WHERE email = %s', [ delete_email ])
+                delete_type = cursor.fetchone()
+
+                # check which type, to correctly initiate the ON DELETE CASCADE
+                if delete_type == 'administrator' and user_email!= delete_email: # also check so that the admin does not delete him/herself
+                    cursor.execute ('DELETE FROM administrator WHERE email = %s', [ delete_email ])
+                else:
+                    cursor.execute ('DELETE FROM member WHERE email = %s', [ delete_email ])
+
+        return HttpResponseRedirect(reverse('admin_user'))
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
 def admin_activity(request):
     '''
     user_activity view function responsible for the list of activities page from the admin side.
@@ -452,6 +516,61 @@ def admin_activity(request):
     else:
         return HttpResponseRedirect(reverse('admin_index'))
 
+def admin_activity_edit(request,activity_id):
+    '''
+    admin_activity_edit view function responsible for the editing of activity from the admin side.
+    Takes in the request and the user's email and returns the rendering of the admin_activity_edit page.
+    Argument:
+        request: HTTP request
+        activity_id: activity_id that wants to be edited
+    Return:
+        render function: renders the admin_user_edit page (path: /admin_activity_edit/activity_id)
+    '''
+    user_email = request.session.get('email',False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST': 
+            
+            with connection.cursor() as cursor:
+
+                cursor.execute('UPDATE activity SET inviter  = %s, category = %s, activity_name = %s, start_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
+                    request.POST['inviter'], request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity'], activity_id
+                ])
+
+            return HttpResponseRedirect(reverse('admin_activity'))
+        
+        else:
+            return render(request,'admin_activity_edit.html')
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_activity_delete(request,activity_id):
+    '''
+    admin_activity_delete view function responsible for the deleting activities from the database from the admin side.
+    Takes in the request and the activity ID and executes a SQL query to delete the user from the database.
+    Argument:
+        request: HTTP request
+        activity_id: activity ID that wants to be deleted
+    Return:
+        HTTP Response Redirect to the admin_activity page
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                cursor.execute('DELETE FROM activity WHERE activity_id = %s', [ activity_id ])
+
+        return HttpResponseRedirect(reverse('admin_activity'))
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
 def admin_review(request):
     '''
     user_review view function responsible for the list of reviews page from the admin side.
@@ -468,7 +587,6 @@ def admin_review(request):
 
         context = dict()
 
-        # TODO: Make a CRUD for the admin site 
         with connection.cursor() as cursor:
             # Get the list of users 
             cursor.execute('SELECT * FROM review')
@@ -479,6 +597,34 @@ def admin_review(request):
         return render(request,'admin_review.html',context)
     else:
         return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_review_delete(request,activity_id,timestamp,participant_email):
+    '''
+    admin_review_delete view function responsible for the deleting reviews from the database from the admin side.
+    Takes in the request and the activity ID and executes a SQL query to delete the review from the database.
+    Argument:
+        request: HTTP request
+        activity_id: activity ID of the review that wants to be deleted
+        timestamp: timestamp of the review that wants to be deleted
+        participant_email: participant of the review that wants to be deleted
+    Return:
+        HTTP Response Redirect to the admin_review page
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                cursor.execute('DELETE FROM review WHERE activity_id = %s AND timestamp = %s AND participant = %s', [ 
+                    activity_id, timestamp,participant_email ])
+
+        return HttpResponseRedirect(reverse('admin_review'))
+
+    return HttpResponseRedirect(reverse('admin_index'))
 
 def admin_report(request):
     '''
@@ -496,7 +642,6 @@ def admin_report(request):
 
         context = dict()
 
-        # TODO: Make a CRUD for the admin site 
         with connection.cursor() as cursor:
             # Get the list of users 
             cursor.execute('SELECT * FROM report')
@@ -508,7 +653,33 @@ def admin_report(request):
     else:
         return HttpResponseRedirect(reverse('admin_index'))
 
-#View function for category popularity list
+def admin_report_delete(request,submitter_email,timestamp):
+    '''
+    admin_report_delete view function responsible for the deleting reports from the database from the admin side.
+    Takes in the request, submitter's email, and timestamp, and executes a SQL query to delete the report from the database.
+    Argument:
+        request: HTTP request
+        submitter_email: the report submitter's email that wants to be deleted
+        timestamp: the timestamp of the report that wants to be deleted
+    Return:
+        HTTP Response Redirect to the admin_report page
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                cursor.execute('DELETE FROM report WHERE submitter = %s AND timestamp = %s', [ submitter_email,timestamp ])
+
+        return HttpResponseRedirect(reverse('admin_report'))
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+# View function for category popularity list
 def frontpage(request):
     '''
     frontpage view function is a friendly front page for the website
