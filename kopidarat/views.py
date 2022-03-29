@@ -29,8 +29,8 @@ def index(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        #all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND now() < a.start_date_time"
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE NOW() < a.start_date_time AND a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE NOW() < a.start_date_time AND a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
+        grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql =  " ORDER BY a.start_date_time ASC"
         #filtering method
         if request.method == "POST":
@@ -40,20 +40,20 @@ def index(request):
                 filters+= " OR a.category="+"'"+category+"'"
             filters=" AND("+filters[3:]+")"
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+filters+ordering_sql)
+                cursor.execute(all_activities_sql+filters+grouping_sql+ordering_sql)
                 activities = cursor.fetchall()
 
         # Get all activities data from the database
         else:
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+ordering_sql)
+                cursor.execute(all_activities_sql+grouping_sql+ordering_sql)
                 activities = cursor.fetchall()
 
         # Put all the records inside the dictionary context
         context = {
             'records' : activities,
             'full_name': request.session.get("full_name"),
-            'categories':categories
+            'categories': categories
         }
 
         return render(request,"index.html", context)
