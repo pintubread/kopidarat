@@ -17,6 +17,12 @@
         <option value= "{{category.0}}" >{{category.0}}</option>
         {% endfor %} 
         </select> </div>
+      <label for="category_id" class="control-label requiredField">Show Activities Within</label> 
+      <div class="controls"><select name="categories" id="categories" multiple size="10">
+        <option value= "1W" >1 Week</option>
+        <option value= "1M" >1 Month</option>
+        <option value= "All Period">All Start Dates</option>
+        </select> </div>
       <button type="submit">Apply Filter</button>
       <a href = "{% url 'index' %}">Clear Selections</a>
       </form>
@@ -39,8 +45,8 @@
           <th> Category </th>
           <th> Start Date Time </th>
           <th> Venue </th>
-          <th> Current Participants</th>
-          <th> Capacity</th>
+          <th> Joined </th>
+          <th> Capacity </th>
           <th> Join </th>
       </thead>
       {% for activity in records %}

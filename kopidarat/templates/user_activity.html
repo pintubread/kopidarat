@@ -16,7 +16,6 @@
     <br />
     <table border="1">
       <thead>
-        <th>Activity ID</th>
         <th>Activity Name</th>
         <th>Inviter</th>
         <th>Category</th>
@@ -28,7 +27,6 @@
       </thead>
       {% for activity in inviter_list %}
       <tr>
-        <td>{{ activity.0 }}</td>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.7 }}</td>
         <td>{{ activity.2 }}</td>
@@ -59,11 +57,10 @@
 
     <br /><br />
 
-    <h2>Activities that you have joined</h2>
+    <h2>Your Upcoming Activities</h2>
     <br />
     <table border="1">
       <thead>
-        <th>Activity ID</th>
         <th>Activity Name</th>
         <th>Inviter</th>
         <th>Category</th>
@@ -71,9 +68,41 @@
         <th>Venue</th>
         <th>Delete Activity</th>
       </thead>
+      {% for activity in upcoming_activities_list %}
+      <tr>
+        <td>{{ activity.3 }}</td>
+        <td>{{ activity.1 }}</td>
+        <td>{{ activity.2 }}</td>
+        <td>{{ activity.4 }}</td>
+        <td>{{ activity.5 }}</td>      
+        <td>
+          <a
+            class="button"
+            href="{% url 'delete_activity' activity.0 %}"
+            class="text-decoration-none"
+          >
+            Cancel Joining
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <br /><br />
+
+    <h2>Past Activities that you have joined</h2>
+    <br />
+    <table border="1">
+      <thead>
+        <th>Activity Name</th>
+        <th>Inviter</th>
+        <th>Category</th>
+        <th>Start Date Time</th>
+        <th>Venue</th>
+        <th>Review</th>
+      </thead>
       {% for activity in joined_activities_list %}
       <tr>
-        <td>{{ activity.0 }}</td>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.1 }}</td>
         <td>{{ activity.2 }}</td>
@@ -82,12 +111,12 @@
         <td>
           <a
             class="button"
-            href="{% url 'delete_activity' activity.0 %}"
+            href="{% url 'review' %}"
             class="text-decoration-none"
           >
-            Delete
+            Review
           </a>
-        </td>
+        </td>        
       </tr>
       {% endfor %}
     </table>

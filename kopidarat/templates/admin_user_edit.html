@@ -9,46 +9,52 @@
 
     <form method="POST">
       {% csrf_token %}
+      Full Name
       <div class="form-group">
         <input
           class="form-control"
           autofocus
           type="text"
           name="full_name"
-          placeholder="Full Name"
+          value="{{obj.0}}"
         />
       </div>
+      Username
       <div class="form-group">
+        
         <input
           class="form-control"
           autofocus
           type="text"
           name="username"
-          placeholder="Username"
+          value="{{obj.1}}"
         />
       </div>
+      Phone Number
       <div class="form-group">
         <input
           class="form-control"
           type="text"
           name="phone_number"
-          placeholder="Phone Number"
+          value="{{obj.3}}"
         />
       </div>
+      Password
       <div class="form-group">
         <input
           class="form-control"
-          type="password"
+          type="text"
           name="password"
-          placeholder="Password"
+          value="{{obj.4}}"
         />
       </div>
+      Type
       <div class="form-group">
         <input
           class="form-control"
           type="text"
           name="type"
-          placeholder="Type"
+          value="{{obj.5}}"
         />
       </div>
       <input class="btn btn-primary" type="submit" value="Update User" />
