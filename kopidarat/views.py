@@ -426,6 +426,45 @@ def admin_user(request):
     else:
         return HttpResponseRedirect(reverse('admin_index'))
 
+def admin_user_create(request):
+    '''
+    admin_user_create view function responsible for the creation of users from the admin side.
+    Takes in the request and returns the rendering of the admin_user_create page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user_create page (path: /admin_user_create)
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    context = dict()
+    message = ''
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                created_user_type = request.POST['type']
+                
+                cursor.execute('INSERT INTO users (full_name,username,email,phone_number,password,type) VALUES (%s,%s,%s,%s,%s,%s)', [
+                    request.POST['full_name'],request.POST['username'],request.POST['email'],request.POST['phone_number'],request.POST['password'],request.POST['type']
+                    ])
+
+                if created_user_type == 'member':
+                    cursor.execute('INSERT INTO member (email) VALUES (%s)', [ request.POST['email']])
+                elif created_user_type == 'administrator':
+                    cursor.execute('INSERT INTO administrator (email) VALUES (%s)', [ request.POST['email']])
+                else:
+                    message = 'Please indicate a right user type'
+
+        context['message'] = message
+        return render(request,'admin_user_create.html',context)
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
 def admin_user_edit(request,edit_email):
     '''
     admin_user_edit view function responsible for the editing of user's credentials from the admin side.
@@ -434,7 +473,7 @@ def admin_user_edit(request,edit_email):
         request: HTTP request
         edit_email: user email that wants to be edited
     Return:
-        render function: renders the admin_user_edit page (path: /admin_user_edit/edit_emailg)
+        render function: renders the admin_user_edit page (path: /admin_user_edit/edit_email)
     '''
     user_email = request.session.get('email',False)
     user_type = request.session.get('type')
@@ -480,8 +519,9 @@ def admin_user_delete(request,delete_email):
 
                 # check which type, to correctly initiate the ON DELETE CASCADE
                 if delete_type == 'administrator' and user_email!= delete_email: # also check so that the admin does not delete him/herself
-                    cursor.execute ('DELETE FROM administrator WHERE email = %s', [ delete_email ])
-                else:
+                    cursor.execute ('DELETE FROM administrator WHERE email = %s', [ delete_email ])   
+                    # TODO: pops up the message if the admin is trying to delete him/herself      
+                elif delete_type == 'member':
                     cursor.execute ('DELETE FROM member WHERE email = %s', [ delete_email ])
 
         return HttpResponseRedirect(reverse('admin_user'))
@@ -515,6 +555,40 @@ def admin_activity(request):
         return render(request,'admin_activity.html',context)
     else:
         return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_activity_create(request):
+    '''
+    admin_activity_create view function responsible for the creation of activity from the admin side.
+    Takes in the request and returns the rendering of the admin_activity_create page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user_create page (path: /admin_activity_create)
+    '''
+    user_email = request.session.get('email',False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+        
+        context = dict()
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM category')
+            categories = cursor.fetchall()
+            
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+                
+                # TODO: Add the checking of inputs 
+                cursor.execute('INSERT INTO activity (inviter,category,activity_name,start_date_time,venue,capacity VALUES (%s,%s,%s,%s,%s,%s)', [
+                    request.POST['inviter'],request.POST['category'],request.POST['activity_name'],request.POST['start_date-time'],request.POST['venue'],request.POST['capacity']
+                ])
+
+        context = {'categories' : categories}
+
+        return render(request,'admin_activity_create.html',context)
+
+    return HttpResponseRedirect(reverse('admin_activity'))
 
 def admin_activity_edit(request,activity_id):
     '''

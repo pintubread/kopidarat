@@ -29,9 +29,11 @@ urlpatterns = [
 
     # Administrator pages
     path('admin_user', views.admin_user, name='admin_user'),
+    path('admin_user_create', views.admin_user_create, name='admin_user_create'),
     path('admin_user_edit/<str:edit_email>', views.admin_user_edit, name='admin_user_edit'),
     path('admin_user_delete/<str:delete_email>', views.admin_user_delete, name='admin_user_delete'),
     path('admin_activity', views.admin_activity, name='admin_activity'),
+    path('admin_activity_create', views.admin_activity_create, name='admin_activity_create'),
     path('admin_activity_edit/<int:activity_id>', views.admin_activity_edit, name='admin_activity_edit'),
     path('admin_activity_delete/<int:activity_id>', views.admin_activity_delete, name='admin_activity_delete'),
     path('admin_review', views.admin_review, name='admin_review'),
