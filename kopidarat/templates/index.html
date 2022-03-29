@@ -40,7 +40,8 @@
           <th> Category </th>
           <th> Start Date Time </th>
           <th> Venue </th>
-          <th> Capacity </th>
+          <th> Current Participants</th>
+          <th> Capacity</th>
           <th> Join </th>
       </thead>
       {% for activity in records %}
@@ -51,7 +52,8 @@
         <td> {{ activity.2 }}</td>
         <td> {{ activity.4 }}</td>
         <td> {{ activity.5 }}</td>
-        <td> {{ activity.6 }}</td>>
+        <td> {{ activity.6 }}</td>
+        <td> {{ activity.7 }}</td>
         <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
       </tr>
       {% endfor %}
