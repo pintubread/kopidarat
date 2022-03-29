@@ -7,7 +7,7 @@
     {% if message %}
     <div>{{ message }}</div>
     {% endif %}
-    <<h1>Hello {{full_name}}!</h1>  
+    <h1>Hello {{full_name}}!</h1>  
     <h2> Available Activities </h2>
     <form action="{% url 'index' %}" method="post">
       {% csrf_token %}
