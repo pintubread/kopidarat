@@ -16,3 +16,4 @@ DROP TABLE category;
 DROP TABLE administrator;
 DROP TABLE member;
 DROP TABLE users;
+
