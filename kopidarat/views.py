@@ -294,7 +294,8 @@ def participants(request, activity_id):
             context["inviter"] = inviter
             return render(request, 'participants.html', context)
         else:
-            return HttpResponseRedirect(reverse("user_activity"))
+            message="You are not registered for this activity, hence you are not authorised to view this page."
+            return index(request,message)
 
     # TODO:to add additional message saying user is not registered for the activity
     return HttpResponseRedirect(reverse("index"))
@@ -844,6 +845,9 @@ def frontpage(request):
     Return:
         render function: renders the category_popularity page (path: /category_popularity)
     '''
+    user_email = request.session.get("email", False)
+    if user_email is not False:
+        HttpResponseRedirect(reverse('index'))
     context = {}
     with connection.cursor() as cursor:
         cursor.execute('SELECT COUNT(*) FROM activity')
@@ -919,7 +923,7 @@ def login_view(request):
 def logout_view(request):
     if "email" in request.session:
         del request.session["email"]
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("frontpage"))
 
 
 def register(request):
