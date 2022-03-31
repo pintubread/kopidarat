@@ -1,5 +1,6 @@
 # Django imports
 import email
+from tkinter import EXCEPTION
 from unittest import result
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -14,7 +15,7 @@ import datetime
 # View Functions for main pages for the member's side of the website
 
 
-def index(request):
+def index(request,*kwargs):
     '''
     Index view function responsible for the main page of the website.
     Takes in the request and returns the rendering of the main page.
@@ -27,7 +28,9 @@ def index(request):
     '''
     # Checking if user is logged in
     user_email = request.session.get("email", False)
-
+    message=''
+    if kwargs:
+        message=''.join(kwargs)
     if user_email is not False:
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
@@ -60,7 +63,8 @@ def index(request):
         context = {
             'records': activities,
             'full_name': request.session.get("full_name"),
-            'categories': categories
+            'categories': categories,
+            'message':message
         }
 
         return render(request, "index.html", context)
@@ -90,26 +94,8 @@ def create_activity(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
-
-                # Insert the activity into the database
-                cursor.execute('INSERT INTO activity (inviter,activity_name,category,start_date_time,venue,capacity) VALUES (%s,%s,%s,%s,%s,%s)', [
-                    request.session.get(
-                        "email"), request.POST['activity_name'], request.POST['category'], request.POST['start_date_time'],
-                    request.POST['venue'], request.POST['capacity']
-                ])
-
-                # Get the activity details
-                cursor.execute('SELECT activity_id FROM activity WHERE inviter =  %s AND activity_name = %s AND category = %s AND start_date_time = %s AND venue = %s AND capacity = %s', [
-                    request.session.get(
-                        "email"), request.POST['activity_name'], request.POST['category'], request.POST['start_date_time'],
-                    request.POST['venue'], request.POST['capacity']
-                ])
-                activity_id = cursor.fetchone()
-
-                # Joining the current user to the joins database
-                cursor.execute('INSERT INTO joins VALUES (%s,%s)', [
-                    activity_id, request.session.get("email")
-                ])
+                cursor.execute('CALL create_new_activity(%s,%s,%s,%s,%s,%s)',[
+                    user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity']])
                 return HttpResponseRedirect(reverse("user_activity"))
         else:
             return render(request, 'create_activity.html', context)
@@ -133,24 +119,15 @@ def join(request, activity_id):
     if user_email is not False:
 
         with connection.cursor() as cursor:
-            cursor.execute(
-                'SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [activity_id, user_email])
-            joined = cursor.fetchone()
-
-            cursor.execute(
-                'SELECT COUNT(*) FROM joins WHERE activity_id = %s', [activity_id])
-            count_participants = cursor.fetchone()
-
-            cursor.execute(
-                'SELECT capacity FROM activity WHERE activity_id = %s', [activity_id])
-            capacity = cursor.fetchone()
-
-            if joined is not None or count_participants >= capacity:
-                message = "You have joined this activity"
-            else:
+            try:
                 cursor.execute('INSERT INTO joins VALUES (%s,%s)', [
-                               activity_id, user_email])
-    return HttpResponseRedirect(reverse("index"), {"message": message})
+                                activity_id, user_email])
+            except IntegrityError:
+                message='You have registered for this activity.'
+            except Exception:
+                message='We regret to inform you that the activity has reached its maximum capacity.'
+            
+    return index(request,message)
 
 
 def user_activity(request):
@@ -251,8 +228,6 @@ def update_activity(request, activity_id):
                 this_activity = cursor.fetchone()
             return HttpResponseRedirect(reverse("user_activity"))
 
-        #else:
-            #return render(request, 'update_activity.html')
         context['this_activity'] = this_activity
         return render(request,'admin_activity_edit.html',context)
 
@@ -344,24 +319,18 @@ def create_review(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [
-                    request.POST['activity_id'], user_email
-                ])
-                joined = cursor.fetchone()
-                if joined is not None:
-                    cursor.execute('SELECT * FROM activity WHERE activity_id=%s AND start_date_time<now()', [
-                        request.POST['activity_id']])
-                    happened = cursor.fetchone()
-                    if happened is not None:
-                        cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
-                            request.POST['activity_id'], datetime.datetime.now(
-                            ), user_email,
-                            request.POST['comment']
-                        ])
+                try:
+                    cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
+                                request.POST['activity_id'], datetime.datetime.now(
+                                ), user_email,
+                                request.POST['comment']
+                            ])
+                except Exception as e:
+                    sql_message = str(e)
+                    if 'violates foreign key constraint' in sql_message:
+                        message='There exists no activity with activity id '+request.POST['activity_id']+', hence your review is not valid.'
                     else:
-                        message = "The activity has yet to take place, hence you cannot give a review."
-                else:
-                    message = "You are unable to give a review -- either the activity id does not exist, or you were never registered for the activity"
+                        message = sql_message
 
         return render(request, 'review.html', {"message": message})
     else:
@@ -384,17 +353,12 @@ def create_report(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
-                cursor.execute('SELECT email FROM users WHERE username = %s ', [
-                    request.POST['username']
-                ])
-                email = cursor.fetchone()
-                if email is not None:
-                    cursor.execute('INSERT INTO report VALUES (%s,%s,%s,%s,%s)', [
-                        user_email, datetime.datetime.now(), email,
-                        request.POST['comment'], request.POST['severity']
-                    ])
-                else:
-                    message = "Username does not exist. Please try again."
+                try:
+                    cursor.execute('INSERT INTO report VALUES (%s,%s,(SELECT email FROM users WHERE username=%s),%s,%s)', [
+                        user_email, datetime.datetime.now(), request.POST['username'],
+                        request.POST['comment'], request.POST['severity']])
+                except Exception:
+                    message = 'There exists no user with the username '+request.POST['username']+'. Please try again.'
         return render(request, 'report.html', {"message": message})
     else:
         return HttpResponseRedirect(reverse("index"))
@@ -973,35 +937,14 @@ def register(request):
             return render(request, "register.html", {
                 "message": "Passwords must match."
             })
-
-        # Check if customerid is already in the table
+        
         with connection.cursor() as cursor:
-
-            cursor.execute("SELECT * FROM users WHERE email = %s",
-                           [request.POST['email']])
-            user = cursor.fetchone()
-
-            # No user with same email
-            if user == None:
-                cursor.execute(
-                    "SELECT * FROM users WHERE username = %s", [request.POST['username']])
-                user = cursor.fetchone()
-
-                if user == None:
-                    cursor.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s, 'member')", [request.POST['full_name'], request.POST['username'], request.POST['email'],
-                                                                                               request.POST['phone_number'], request.POST['password']])
-
-                    cursor.execute("INSERT INTO member VALUES (%s)", [
-                        request.POST['email']
-                    ])
-
-                    return redirect('index')
-                else:
-                    status = 'Customer with username %s already exists' % (
-                        request.POST['username'])
-            else:
-                status = 'Customer with email %s already exists' % (
-                    request.POST['email'])
+            try:
+                cursor.execute("CALL add_new_member(%s, %s, %s, %s, %s)", [request.POST['full_name'], request.POST['username'], request.POST['email'],request.POST['phone_number'], request.POST['password']])
+                return redirect('index')
+            except IntegrityError:
+                status = 'There exists a user with the same email or username'
+  
     context['message'] = status
     return render(request, "register.html", context)
 

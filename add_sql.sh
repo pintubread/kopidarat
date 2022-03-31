@@ -36,6 +36,7 @@ psql ${URI} -f sql/Administrator.sql
 psql ${URI} -f sql/Category.sql
 psql ${URI} -f sql/Joins.sql
 psql ${URI} -f sql/Activity.sql
+psql ${URI} -f sql/ProceduresTriggers.sql
 
 
 
