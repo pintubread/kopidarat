@@ -33,27 +33,32 @@ def index(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE NOW() < a.start_date_time AND a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
+        
+        # TODO: Apply date filter by changing '0 day' to '1 Week' or '1 Month' depending on selection
+        display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
+
         grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # filtering method
-        # TODO: add date filter ('Show Activities Within 1W/1M/All')
         if request.method == "POST":
             categories = request.POST.getlist('categories')
-            filters = ""
+            category_filters = ""
+
             for category in categories:
-                filters += " OR a.category="+"'"+category+"'"
-            filters = " AND("+filters[3:]+")"
+                category_filters += " OR a.category="+"'"+category+"'"
+            category_filters = " AND("+category_filters[3:]+")"        
+
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+filters +
+                cursor.execute(all_activities_sql+display_date_sql+category_filters+
                                grouping_sql+ordering_sql)
                 activities = cursor.fetchall()
 
         # Get all activities data from the database
         else:
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+grouping_sql+ordering_sql)
+                cursor.execute(all_activities_sql+display_date_sql+grouping_sql+ordering_sql)
                 activities = cursor.fetchall()
 
         # Put all the records inside the dictionary context
