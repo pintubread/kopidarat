@@ -50,7 +50,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-INSERT INTO joins VALUES (35,'admin00@kopidarat.herokuapp.com')
 
 CREATE TRIGGER check_capacity
 BEFORE INSERT OR UPDATE
@@ -58,7 +57,6 @@ ON joins
 FOR EACH ROW 
 EXECUTE FUNCTION check_capacity_func();
 
-INSERT INTO joins VALUES(35,'admin00@kopidarat.herokuapp.com')
 
 ----trigger to check validity of review
 
@@ -96,27 +94,6 @@ BEFORE INSERT OR UPDATE
 ON review
 FOR EACH ROW 
 EXECUTE FUNCTION check_review_func();
---- trigger to check validity of report
-
-CREATE OR REPLACE FUNCTION check_report_func() RETURNS TRIGGER AS $$
-DECLARE
-	reported_email VARCHAR;
-BEGIN
-	reported_email = NEW.report_user;
-	
-	IF reported_email IS NULL THEN
-		RAISE EXCEPTION 'Username does not exist';
-		RETURN NULL;
-	ELSE
-		RETURN NEW;
-	END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER check_report
-BEFORE INSERT OR UPDATE
-ON report
-EXECUTE FUNCTION check_report_func();
 
 ---Dropping procedures and triggers
 DROP TRIGGER IF EXISTS check_review ON review;
@@ -130,9 +107,9 @@ DROP PROCEDURE create_new_activity(u_email VARCHAR,
 									u_start_date_time TIMESTAMP,
 									u_venue VARCHAR,
 									u_capacity INTEGER);
-DROP PROCEDURE check_report_func();
-DROP PROCEDURE check_review_func();
-DROP PROCEDURE check_capacity_func();
+DROP FUNCTION check_report_func();
+DROP FUNCTION check_review_func();
+DROP FUNCTION check_capacity_func();
 DROP PROCEDURE add_new_member(full_name VARCHAR,username VARCHAR,
 							  email VARCHAR,phone_number VARCHAR,
 							  password VARCHAR);

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS member (
   ON UPDATE CASCADE 
   ON DELETE CASCADE
   DEFERRABLE INITIALLY DEFERRED
+  NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS administrator (
@@ -19,6 +20,7 @@ CREATE TABLE IF NOT EXISTS administrator (
   ON UPDATE CASCADE
   ON DELETE CASCADE
   DEFERRABLE INITIALLY DEFERRED
+  NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS category (
@@ -29,8 +31,9 @@ CREATE TABLE IF NOT EXISTS activity (
   inviter VARCHAR(64) REFERENCES users(email)
   	ON UPDATE CASCADE 
 	ON DELETE CASCADE
-  	DEFERRABLE INITIALLY DEFERRED,
-  category VARCHAR(32) REFERENCES category(category),
+  	DEFERRABLE INITIALLY DEFERRED
+	NOT NULL,
+  category VARCHAR(32) REFERENCES category(category) NOT NULL,
   activity_name VARCHAR(128) NOT NULL,
   start_date_time TIMESTAMP NOT NULL,
   venue VARCHAR(128) NOT NULL,
@@ -38,23 +41,23 @@ CREATE TABLE IF NOT EXISTS activity (
 );
 
 CREATE TABLE IF NOT EXISTS joins (
-  activity_id INT REFERENCES activity(activity_id),
-  participant VARCHAR(64) REFERENCES users(email),
+  activity_id INT REFERENCES activity(activity_id) NOT NULL,
+  participant VARCHAR(64) REFERENCES users(email) NOT NULL,
   PRIMARY KEY (activity_id,participant)
 );
 
 CREATE TABLE IF NOT EXISTS review (
-  activity_id INT REFERENCES activity(activity_id),
+  activity_id INT REFERENCES activity(activity_id) NOT NULL,
   timestamp TIMESTAMP NOT NULL,
-  participant VARCHAR(64) REFERENCES users(email),
+  participant VARCHAR(64) REFERENCES users(email) NOT NULL,
   comment VARCHAR(4096) NOT NULL,
   PRIMARY KEY (activity_id,timestamp,participant)
 );
 
 CREATE TABLE IF NOT EXISTS report (
-  submitter VARCHAR(64) REFERENCES users(email),
+  submitter VARCHAR(64) REFERENCES users(email) NOT NULL,
   timestamp TIMESTAMP NOT NULL,
-  report_user VARCHAR(64) REFERENCES users(email),
+  report_user VARCHAR(64) REFERENCES users(email) NOT NULL,
   comment VARCHAR(4096) NOT NULL,
   severity VARCHAR(6) NOT NULL CHECK (severity = 'low' OR severity = 'medium' OR severity = 'high'),
   PRIMARY KEY (submitter,timestamp)

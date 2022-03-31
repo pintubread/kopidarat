@@ -357,7 +357,7 @@ def create_report(request):
                     cursor.execute('INSERT INTO report VALUES (%s,%s,(SELECT email FROM users WHERE username=%s),%s,%s)', [
                         user_email, datetime.datetime.now(), request.POST['username'],
                         request.POST['comment'], request.POST['severity']])
-                except Exception:
+                except IntegrityError:
                     message = 'There exists no user with the username '+request.POST['username']+'. Please try again.'
         return render(request, 'report.html', {"message": message})
     else:
