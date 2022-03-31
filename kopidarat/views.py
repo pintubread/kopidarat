@@ -847,7 +847,7 @@ def frontpage(request):
     '''
     user_email = request.session.get("email", False)
     if user_email is not False:
-        HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('index'))
     context = {}
     with connection.cursor() as cursor:
         cursor.execute('SELECT COUNT(*) FROM activity')
