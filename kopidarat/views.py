@@ -1,7 +1,4 @@
 # Django imports
-import email
-from tkinter import EXCEPTION
-from unittest import result
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.db import connection, IntegrityError
