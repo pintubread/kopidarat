@@ -5,7 +5,15 @@
   </head>
   <body>
     {% if message %}
-    <div>{{ message }}</div>
+    <div id="overlay"></div>
+    <div class="popup">
+      <div class="popupcontent">{{message}}</div>
+      <a
+        class="button"
+        href="{% url 'index' %}"
+        class="text-decoration-none"
+      >Back To Main Page</a>
+    </div>
     {% endif %}
     <h1>Hello {{full_name}}!</h1>  
     <h2> Available Activities </h2>
