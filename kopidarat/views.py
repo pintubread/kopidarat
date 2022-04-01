@@ -10,7 +10,7 @@ from django.template import loader
 import datetime
 
 # View Functions for main pages for the member's side of the website 
-def index(request):
+def index(request, *kwargs):
     '''
     Index view function responsible for the main page of the website.
     Takes in the request and returns the rendering of the main page.
@@ -23,13 +23,16 @@ def index(request):
     '''
     # Checking if user is logged in
     user_email = request.session.get("email", False)
+    message=''
+    if kwargs:
+        message=''.join(kwargs)
 
     if user_email is not False:
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND %s < a.start_date_time"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND now() < a.start_date_time"
         ordering_sql =  " ORDER BY a.start_date_time ASC"
 
         # filtering method
@@ -46,16 +49,15 @@ def index(request):
             # Filtering the time selection
             display_period = request.POST.getlist('display_period')[0].split('_') # Need the values in HTML to be split with underscore
             duration,unit = int(display_period[0]),display_period[1]
-
-            time_filter_sql = " AND %s < %s "
-
+            print(duration)
+            print(unit)
             if unit == 'week':
                 limit_time = (datetime.datetime.now()) + datetime.timedelta(weeks=duration)
             elif unit == 'month':
                 limit_time = (datetime.datetime.now()) + datetime.timedelta(month=duration)
             
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql, [ datetime.datetime.now(),datetime.datetime.now(),limit_time])
+                cursor.execute(all_activities_sql + category_filter_sql + " AND %s < %s " + ordering_sql, [datetime.datetime.now(),limit_time])
                 activities = cursor.fetchall()
 
         # Get all activities data from the database
@@ -388,30 +390,43 @@ def admin_index(request):
         with connection.cursor() as cursor:
 
             # Select the top 5 most active users (identified by usernames) based on the number of activities joined
-            cursor.execute('SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join DESC ,u.username ASC LIMIT 5')
+            cursor.execute(
+                'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join DESC ,u.username ASC LIMIT 5')
             list_of_active_users = cursor.fetchall()
 
             # Select the top 5 most inactive users (identified by usernames) based on the number of activities joined
-            cursor.execute('SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
+            cursor.execute(
+                'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
             list_of_inactive_users = cursor.fetchall()
 
-            # Select the top 5 activities with the most reviews, by counting the number of reviews 
+            # Select the top 5 activities with the most reviews, by counting the number of reviews
             cursor.execute('SELECT a.activity_id,a.activity_name, COUNT(r.comment) AS total_reviews FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY total_reviews DESC, a.activity_id ASC LIMIT 5')
             list_of_reviewed_activities = cursor.fetchall()
+
+            # Select the top 5 activities with the highest average rating
+            cursor.execute('SELECT a.activity_id,a.activity_name, AVG(r.rating)::NUMERIC(10,2) AS rating FROM activity a, review r  WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
+            list_of_rated_activities = cursor.fetchall()
 
             # Select the 5 most reported users (counted if the severity is medium or high only)
             cursor.execute("SELECT u.username, COUNT(r.comment) AS total_reports FROM users u, report r WHERE u.email = r.report_user AND (r.severity = 'medium' OR r.severity = 'high') GROUP BY u.username ORDER BY total_reports DESC, u.username ASC LIMIT 5")
             list_of_user_reports = cursor.fetchall()
 
+            # Select activities created by administrators
+            cursor.execute("SELECT * FROM activity a, users u WHERE a.inviter = u.email AND u.type = 'administrator' ORDER BY a.start_date_time ASC")
+            list_of_activities_by_admin = cursor.fetchall()
+
         context = {
-            'list_of_active_users' : list_of_active_users,
-            'list_of_inactive_users' : list_of_inactive_users,
-            'list_of_reviewed_activities' : list_of_reviewed_activities,
-            'list_of_user_reports' : list_of_user_reports
+            'list_of_active_users': list_of_active_users,
+            'list_of_inactive_users': list_of_inactive_users,
+            'list_of_reviewed_activities': list_of_reviewed_activities,
+            'list_of_rated_activities': list_of_rated_activities,
+            'list_of_user_reports': list_of_user_reports,
+            'list_of_activities_by_admin': list_of_activities_by_admin
         }
         return render(request, 'admin_index.html', context)
     else:
         return HttpResponseRedirect(reverse('login'))
+
 
 def admin_user(request):
     '''
