@@ -124,6 +124,7 @@ def join(request, activity_id):
             try:
                 cursor.execute('INSERT INTO joins VALUES (%s,%s)', [
                                 activity_id, user_email])
+                message='You have successfully registered for this activity!'
             except IntegrityError:
                 message='You have registered for this activity.'
             except Exception:
@@ -947,6 +948,9 @@ def register(request):
         with connection.cursor() as cursor:
             try:
                 cursor.execute("CALL add_new_member(%s, %s, %s, %s, %s)", [request.POST['full_name'], request.POST['username'], request.POST['email'],request.POST['phone_number'], request.POST['password']])
+                request.session["email"] = request.POST['email']
+                request.session["full_name"] = request.POST['full_name']
+                request.session["type"] = 'member'
                 return redirect('index')
             except IntegrityError:
                 status = 'There exists a user with the same email or username'

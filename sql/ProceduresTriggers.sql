@@ -50,7 +50,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 CREATE TRIGGER check_capacity
 BEFORE INSERT OR UPDATE
 ON joins
