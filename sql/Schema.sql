@@ -62,3 +62,7 @@ CREATE TABLE IF NOT EXISTS report (
   severity VARCHAR(6) NOT NULL CHECK (severity = 'low' OR severity = 'medium' OR severity = 'high'),
   PRIMARY KEY (submitter,timestamp)
 );
+
+CREATE TABLE IF NOT EXISTS random_comments (
+	comment VARCHAR(500) PRIMARY KEY UNIQUE
+); 

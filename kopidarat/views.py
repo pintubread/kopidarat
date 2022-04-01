@@ -138,7 +138,6 @@ def user_activity(request):
     user_activity view function that is responsible for the user_activity page.
     Takes in the request and the username of the user and returns the rendering 
     of the user_activity page. 
-
     # NOTE: the function for deleting and updating events is refactored out for better code clarity. 
     Argument:
         request: HTTP request
@@ -154,19 +153,25 @@ def user_activity(request):
 
         with connection.cursor() as cursor:
 
-            # Get the table of activities where the current user is the inviter
-            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s ORDER BY a.start_date_time ASC', [
+            # Get the table of past activities where the current user is the inviter
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s AND a.start_date_time < NOW() ORDER BY a.start_date_time ASC', [
+                user_email
+            ])
+            past_inviter_list = cursor.fetchall()
+
+            # Get the table of upcoming activities where the current user is the inviter
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s AND a.start_date_time > NOW() ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             inviter_list = cursor.fetchall()
 
-            # Get the table of activities in the future created by other user where the user has signed up for
+            # Get the table of upcoming activities created by other user where the user has signed up for
             cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() <= a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             upcoming_activities_list = cursor.fetchall()
 
-            # Get the table of activities created by other user where the user has joined in the past
+            # Get the table of past activities created by other user where the user has joined
             cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
@@ -185,6 +190,7 @@ def user_activity(request):
             reports_list = cursor.fetchall()
 
         context['user_fullname'] = request.session.get('full_name')
+        context['past_inviter_list'] = past_inviter_list
         context['inviter_list'] = inviter_list
         context['upcoming_activities_list'] = upcoming_activities_list
         context['joined_activities_list'] = joined_activities_list
@@ -195,6 +201,7 @@ def user_activity(request):
 
     else:
         return HttpResponseRedirect(reverse("index"))
+
 
 
 def update_activity(request, activity_id):
