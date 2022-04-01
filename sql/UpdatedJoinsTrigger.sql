@@ -1,12 +1,6 @@
 DROP TRIGGER IF EXISTS check_capacity ON joins;
 DROP FUNCTION check_capacity_func();
 
-CREATE TRIGGER check_capacity
-AFTER INSERT OR UPDATE
-ON joins
-FOR EACH ROW 
-EXECUTE FUNCTION check_capacity_func();
-
 CREATE OR REPLACE FUNCTION check_capacity_func() RETURNS TRIGGER AS $$
 DECLARE
 	curr_participation INTEGER;
@@ -31,3 +25,9 @@ BEGIN
 	END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_capacity
+AFTER INSERT OR UPDATE
+ON joins
+FOR EACH ROW 
+EXECUTE FUNCTION check_capacity_func();
