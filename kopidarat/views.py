@@ -189,6 +189,14 @@ def user_activity(request):
             ])
             reports_list = cursor.fetchall()
 
+            # Select the top 5 activities with the highest average rating
+            cursor.execute('SELECT a.activity_id,a.activity_name, AVG(r.rating)::NUMERIC(10,2) AS rating FROM activity a, review r  WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
+            list_of_rated_activities = cursor.fetchall()
+
+            # Select activities created by administrators
+            cursor.execute("SELECT * FROM activity a, users u WHERE a.inviter = u.email AND u.type = 'administrator' ORDER BY a.start_date_time ASC")
+            list_of_activities_by_admin = cursor.fetchall()
+
         context['user_fullname'] = request.session.get('full_name')
         context['past_inviter_list'] = past_inviter_list
         context['inviter_list'] = inviter_list
@@ -196,6 +204,9 @@ def user_activity(request):
         context['joined_activities_list'] = joined_activities_list
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
+        context['list_of_rated_activities'] = list_of_rated_activities
+        context['list_of_activities_by_admin'] = list_of_activities_by_admin
+
 
         return render(request, 'user_activity.html', context)
 

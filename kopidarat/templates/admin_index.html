@@ -56,6 +56,22 @@
       {% endfor %}
     </table>
   </br>
+  <h3> Top 5 rated activities </h3>
+  <table border=1>
+    <thead>
+      <th> Activity ID </th>
+      <th> Activity Name </th>
+      <th> Number of Reviews </th>
+    </thead>
+    {% for review in list_of_rated_activities %}
+    <tr>
+      <td>{{ review.0 }}</td>
+      <td>{{ review.1 }}</td>
+      <td>{{ review.2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</br>
   <h3> Top 5 most reported users (with severity Medium or higher) </h3>
     <table border=1>
       <thead>
