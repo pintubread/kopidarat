@@ -29,7 +29,7 @@ def index(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND %s < a.start_date_time"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
         ordering_sql =  " ORDER BY a.start_date_time ASC"
 
         # filtering method
@@ -37,22 +37,28 @@ def index(request):
             # Filtering the categories
             list_of_categories = request.POST.getlist('categories') # list of categories that are selected for filter
             category_filters = ""
+            #Check if any category is chosen
+            if len(list_of_categories)>0:
+                for category in list_of_categories:
+                    category_filters+= " OR a.category=" + "'" + category + "'"# starting OR deleted, the rest for combining the categories 
 
-            for category in list_of_categories:
-                category_filters+= " OR a.category=" + "'" + category + "'"# starting OR deleted, the rest for combining the categories 
-
-            category_filter_sql = " AND (" + category_filters[3:] + ")" # starts from 3 because to delete the starting 'OR'
+                category_filter_sql = " AND (" + category_filters[3:] + ")" # starts from 3 because to delete the starting 'OR'
 
             # Filtering the time selection
-            display_period = request.POST.getlist('display_period')[0].split('_') # Need the values in HTML to be split with underscore
-            duration,unit = int(display_period[0]),display_period[1]
+            list_of_time_filters = request.POST.getlist('display_period')
+            time_filter_sql=""
+            #Check if any time filter is chosen
+            if len(list_of_time_filters)>0:
+                print(len(list_of_time_filters))
+                display_period = list_of_time_filters[0].split('_') # Need the values in HTML to be split with underscore
+                duration,unit = int(display_period[0]),display_period[1]
 
-            time_filter_sql = " AND %s < %s "
+                time_filter_sql = " AND %s < %s "
 
-            if unit == 'week':
-                limit_time = (datetime.datetime.now()) + datetime.timedelta(weeks=duration)
-            elif unit == 'month':
-                limit_time = (datetime.datetime.now()) + datetime.timedelta(month=duration)
+                if unit == 'week':
+                    limit_time = (datetime.datetime.now()) + datetime.timedelta(weeks=duration)
+                elif unit == 'month':
+                    limit_time = (datetime.datetime.now()) + datetime.timedelta(month=duration)
             
             with connection.cursor() as cursor:
                 cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql, [ datetime.datetime.now(),datetime.datetime.now(),limit_time])
@@ -889,8 +895,11 @@ def register(request):
                     cursor.execute("INSERT INTO member VALUES (%s)", [
                         request.POST['email']
                     ])
+                    request.session["username"] = request.POST['username']
+                    request.session["full_name"] = request.POST['full_name']
+                    request.session["type"] = 'member'
 
-                    return redirect('index')
+                    return HttpResponseRedirect('index')
                 else:
                     status = 'Customer with username %s already exists' % (request.POST['username'])    
             else:
@@ -899,38 +908,6 @@ def register(request):
     return render(request, "register.html", context)
 
 
-## update later
-def forget_password(request):
-    if request.method == "POST":
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM user WHERE email = %s", [request.POST['email']])
-            user_fullname = cursor.fetchone()
-            if user_fullname == None:
-                return render(request, "forget_password.html", 
-                {"message": "The given email is not registered under any account."})
-            else:
-                html_message = loader.render_to_string('reset_password_email.html',
-                {'full_name': user_fullname})
-                send_mail(subject="KopiDarat Account Password Reset",
-                message="Looks like you've forgotten your KopiDarat password! To reset your password, follow the link below:",
-                recipient_list=[request.post['email'],],
-                fail_silently=False, html_message=html_message)
-                return render(request,"reset_password_email_sent.html")
-    return render(request,"forget_password.html")
-
-def reset_password(request):
-    if request.method == "POST":
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "reset_password.html", {
-                "message": "Passwords must match."
-            })
-        
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE user SET password=%s WHERE email=%s",[request.POST['password'],request.user.email])
-            return render(request,"reset_password_successful.html")
-    return render(request,"reset_password.html")
 
     
     
