@@ -5,6 +5,7 @@ from django.db import connection, IntegrityError
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.template import loader
+from dateutil.relativedelta import relativedelta
 
 # Custom imports 
 import datetime
@@ -28,8 +29,9 @@ def index(request):
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
-
+        now = datetime.datetime.now()
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
+
         ordering_sql =  " ORDER BY a.start_date_time ASC"
 
         # filtering method
@@ -37,6 +39,7 @@ def index(request):
             # Filtering the categories
             list_of_categories = request.POST.getlist('categories') # list of categories that are selected for filter
             category_filters = ""
+            category_filter_sql=""
             #Check if any category is chosen
             if len(list_of_categories)>0:
                 for category in list_of_categories:
@@ -53,15 +56,14 @@ def index(request):
                 display_period = list_of_time_filters[0].split('_') # Need the values in HTML to be split with underscore
                 duration,unit = int(display_period[0]),display_period[1]
 
-                time_filter_sql = " AND %s < %s "
-
                 if unit == 'week':
                     limit_time = (datetime.datetime.now()) + datetime.timedelta(weeks=duration)
                 elif unit == 'month':
-                    limit_time = (datetime.datetime.now()) + datetime.timedelta(month=duration)
+                    limit_time = (datetime.datetime.now()) + relativedelta(month=duration)
+                time_filter_sql = " AND a.start_date_time <"+limit_time.strftime("'%Y-%m-%d %H:%M:%S'")
             
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql, [ datetime.datetime.now(),datetime.datetime.now(),limit_time])
+                cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql)
                 activities = cursor.fetchall()
 
         # Get all activities data from the database
