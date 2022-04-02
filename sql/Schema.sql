@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS review (
   activity_id INT REFERENCES activity(activity_id) NOT NULL,
   timestamp TIMESTAMP NOT NULL,
   participant VARCHAR(64) REFERENCES users(email) NOT NULL,
-  rating INT NOT NULL,
   comment VARCHAR(4096) NOT NULL,
   PRIMARY KEY (activity_id,timestamp,participant)
 );
@@ -65,9 +64,5 @@ CREATE TABLE IF NOT EXISTS report (
 );
 
 CREATE TABLE IF NOT EXISTS random_comments (
-	comment VARCHAR(4096) PRIMARY KEY UNIQUE
+	comment VARCHAR(500) PRIMARY KEY UNIQUE
 ); 
-
-CREATE TABLE IF NOT EXISTS random_report (
-	comment VARCHAR(4096) PRIMARY KEY
-);

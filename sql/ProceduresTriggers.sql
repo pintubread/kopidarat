@@ -32,7 +32,6 @@ CREATE OR REPLACE FUNCTION check_capacity_func() RETURNS TRIGGER AS $$
 DECLARE
 	curr_participation INTEGER;
 	activity_capacity INTEGER;
-	slots_left INTEGER;
 BEGIN
 	SELECT COUNT(*) INTO curr_participation
 	FROM joins j
@@ -41,23 +40,22 @@ BEGIN
 	SELECT capacity INTO activity_capacity
 	FROM activity a
 	WHERE a.activity_id = NEW.activity_id;
-
-	slots_left = activity_capacity - curr_participation;
 	
-	IF slots_left<0 THEN
+	IF activity_capacity - curr_participation<1 THEN
 		RAISE EXCEPTION 'Maximum capacity for activity reached.';
-		DELETE FROM joins WHERE activity_id=NEW.activity_id AND participant=NEW.participant;
-	ELSE
 		RETURN NULL;
+	ELSE
+		RETURN NEW;
 	END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_capacity
-AFTER INSERT OR UPDATE
+BEFORE INSERT OR UPDATE
 ON joins
 FOR EACH ROW 
 EXECUTE FUNCTION check_capacity_func();
+
 
 ----trigger to check validity of review
 

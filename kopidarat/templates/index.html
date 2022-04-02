@@ -8,11 +8,11 @@
     <div id="overlay"></div>
     <div class="popup">
       <div class="popupcontent">{{message}}</div>
-      <!--a
+      <a
         class="button"
         href="{% url 'index' %}"
         class="text-decoration-none"
-      >Back To Main Page</a><-->
+      >Back To Main Page</a>
     </div>
     {% endif %}
     <h1>Hello {{full_name}}!</h1>  
@@ -26,9 +26,9 @@
         {% endfor %} 
         </select> </div>
       <label for="period_id" class="control-label requiredField">Show Activities Within</label> 
-      <div class="controls"><select name="display_period" id="display_period" multiple size="1">
-        <option value= "1_week" >1 Week</option>
-        <option value= "1_month" >1 Month</option>
+      <div class="controls"><select name="display_period" id="display_period" multiple size="10">
+        <option value= "1W" >1 Week</option>
+        <option value= "1M" >1 Month</option>
         </select> </div>
       <button type="submit">Apply Filter</button>
       <a href = "{% url 'index' %}">Clear Selections</a>
