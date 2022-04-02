@@ -176,18 +176,29 @@ def user_activity(request):
         context = dict()
 
         with connection.cursor() as cursor:
-            
-            # Get the table of activities where the current user is the inviter
-            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s ORDER BY a.start_date_time ASC',[
+            # Get the table of upcoming activities where the current user is the inviter
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s AND a.start_date_time<NOW() ORDER BY a.start_date_time ASC',[
                 user_email
             ])
-            inviter_list = cursor.fetchall()
+            inviter_past_list = cursor.fetchall()
 
-            # Get the table of activities where the user has joined in
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s ORDER BY a.start_date_time ASC', [
+            # Get the table of upcoming activities where the current user is the inviter
+            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s AND a.start_date_time>NOW() ORDER BY a.start_date_time ASC',[
                 user_email
             ])
-            joined_activities_list = cursor.fetchall()
+            inviter_future_list = cursor.fetchall()
+
+            # Get the table of future activities where the user has joined in
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s AND a.start_date_time>NOW() ORDER BY a.start_date_time ASC', [
+                user_email
+            ])
+            joined_future_activities_list = cursor.fetchall()
+
+            # Get the table of past activities where the user has joined in
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND j.participant = %s AND a.start_date_time<NOW() ORDER BY a.start_date_time ASC', [
+                user_email
+            ])
+            joined_past_activities_list = cursor.fetchall()
 
             # Get table of reviews that user has created
             cursor.execute('SELECT a.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
@@ -202,8 +213,10 @@ def user_activity(request):
             reports_list = cursor.fetchall()
 
         context['user_fullname'] = request.session.get('full_name')
-        context['inviter_list'] = inviter_list
-        context['joined_activities_list'] = joined_activities_list
+        context['inviter_future_list'] = inviter_future_list
+        context['inviter_past_list'] = inviter_past_list
+        context['joined_future_activities_list'] = joined_future_activities_list
+        context['joined_past_activities_list'] = joined_past_activities_list
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
 
@@ -289,25 +302,25 @@ def participants(request,activity_id):
             ])
             user=cursor.fetchone()
 
-        if user is not None:
-            cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
-            [int(activity_id),user_email])
-            participants=cursor.fetchall()
+            if user is not None:
+                cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
+                [int(activity_id),user_email])
+                participants=cursor.fetchall()
 
-            cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
-            activity_name,inviter = cursor.fetchone()
+                cursor.execute('SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s',[activity_id])
+                activity_name,inviter = cursor.fetchone()
 
-            context["participants"] = participants
-            context["activity_name"] = activity_name
-            context["inviter"] = inviter
-            return render(request,'participants.html',context)
-        else:
-            return HttpResponseRedirect(reverse("user_activity"))
-
-    # TODO:to add additional message saying user is not registered for the activity        
+                context["participants"] = participants
+                context["activity_name"] = activity_name
+                context["inviter"] = inviter
+                return render(request,'participants.html',context)
+            else:
+                request.session["message"]="You are not registered for the activity, hence you cannot view the participants' list"
+                return HttpResponseRedirect(reverse("user_activity"))
+       
     return HttpResponseRedirect(reverse("index"))
 
-def create_review(request):
+def create_review(request,activity_id):
     '''
     create_review view function which is responsible for the creating review page.
     Takes in the request and returns a render function to render the review page.
@@ -318,30 +331,22 @@ def create_review(request):
     '''
     user_email = request.session.get("email", False)
     message=""
+    context={}
     if user_email is not False:
-
-        if request.method =='POST':
-
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s', [
-                request.POST['activity_id'], user_email
-            ])
-                joined = cursor.fetchone()
-                if joined is not None:
-                    cursor.execute('SELECT * FROM activity WHERE activity_id=%s AND start_date_time<now()', [
-                    request.POST['activity_id']])
-                    happened = cursor.fetchone()
-                    if happened is not None: 
-                        cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
-                            request.POST['activity_id'],datetime.datetime.now(),user_email,
-                            request.POST['comment']
-                        ])
-                    else:
-                        message = "The activity has yet to take place, hence you cannot give a review."
-                else:
-                    message="You are unable to give a review -- either the activity id does not exist, or you were never registered for the activity"
-
-        return render(request, 'review.html',{"message":message})
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
+            activity_details = cursor.fetchone()
+            context["activity_details"]=activity_details
+            if request.method =='POST':
+                try:
+                    cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
+                        activity_id,datetime.datetime.now(),user_email,
+                        request.POST['comment']
+                    ])
+                except Exception as e:
+                    message=str(e)
+                    context["message"]=message
+        return render(request, 'review.html',context)
     else:
         return HttpResponseRedirect(reverse("index"))
 
