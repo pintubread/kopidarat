@@ -30,7 +30,7 @@ def index(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
         now = datetime.datetime.now()
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity, (SELECT a1.capacity - (SELECT COUNT(*) FROM joins j WHERE j.activity_id=a.activity_id)FROM activity a1 WHERE a1.activity_id=a.activity_id) FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
 
         ordering_sql =  " ORDER BY a.start_date_time ASC"
 
@@ -74,7 +74,9 @@ def index(request):
 
         # Put all the records inside the dictionary context
         context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories}
-
+        if request.session.get("message",False):
+            context["message"]=request.session["message"]
+            del request.session["message"]
         return render(request,"index.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
@@ -141,18 +143,17 @@ def join(request,activity_id):
     if user_email is not False:
 
         with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM joins WHERE activity_id=%s AND participant=%s',[
-                activity_id,user_email
-            ])
-            joined = cursor.fetchone()
-
-            if joined is not None:
-                message = "You have joined this activity"
-            else:
+            try:
                 cursor.execute('INSERT INTO joins VALUES (%s,%s)',[
                 activity_id,user_email
                 ])
-    return HttpResponseRedirect(reverse("index"),{"message": message})
+                message="You have successfully registered for this activity!"
+            except IntegrityError:
+                message="You have previously registered for this activity"
+            except Exception:
+                message="We regret to inform you that the activity has reached its maximum capacity"
+        request.session["message"]=message
+    return HttpResponseRedirect(reverse("index"))
 
 
 def user_activity(request):
