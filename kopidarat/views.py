@@ -30,7 +30,7 @@ def index(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
         now = datetime.datetime.now()
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity, (SELECT a1.capacity - (SELECT COUNT(*) FROM joins j WHERE j.activity_id=a.activity_id)FROM activity a1 WHERE a1.activity_id=a.activity_id) FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity, (SELECT COUNT(*) FROM joins j WHERE j.activity_id=a.activity_id) AS joined FROM activity a1 WHERE a1.activity_id=a.activity_id) FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
 
         ordering_sql =  " ORDER BY a.start_date_time ASC"
 
