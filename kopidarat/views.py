@@ -34,13 +34,18 @@ def index(request,*kwargs):
             categories = cursor.fetchall()
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
-        
-        # TODO: Apply date filter by changing '0 day' to '1 Week' or '1 Month' depending on selection
         display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
-
+        recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
         grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
+        # Get recommended activities:
+        # All upcoming activities whose categories have been joined by the user
+        with connection.cursor() as cursor:
+            cursor.execute(all_activities_sql+display_date_sql+recommended_categories_sql+
+                               grouping_sql+ordering_sql, [user_email])
+            recommended_activities = cursor.fetchall()
+
         # filtering method
         if request.method == "POST":
             categories = request.POST.getlist('categories')
@@ -63,6 +68,7 @@ def index(request,*kwargs):
 
         # Put all the records inside the dictionary context
         context = {
+            'recommended_activities': recommended_activities,
             'records': activities,
             'full_name': request.session.get("full_name"),
             'categories': categories,
@@ -190,7 +196,7 @@ def user_activity(request):
             reports_list = cursor.fetchall()
 
             # Select the top 5 activities with the highest average rating
-            cursor.execute('SELECT a.activity_id,a.activity_name, AVG(r.rating)::NUMERIC(10,2) AS rating FROM activity a, review r  WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
+            cursor.execute('SELECT a.activity_id,a.activity_name, AVG(r.rating)::NUMERIC(10,2) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
             list_of_rated_activities = cursor.fetchall()
 
             # Select activities created by administrators
@@ -212,8 +218,6 @@ def user_activity(request):
 
     else:
         return HttpResponseRedirect(reverse("index"))
-
-
 
 def update_activity(request, activity_id):
     '''
@@ -612,9 +616,8 @@ def admin_activity(request):
 
         context = dict()
 
-        # TODO: Make a CRUD for the admin site
         with connection.cursor() as cursor:
-            # Get the list of users
+            # Get the list of activities
             cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND count_participant.count <= a.capacity GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity ORDER BY a.start_date_time ASC')
             list_of_activities = cursor.fetchall()
 
