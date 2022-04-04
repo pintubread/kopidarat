@@ -5,6 +5,7 @@ from django.db import connection, IntegrityError
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.template import loader
+from dateutil.relativedelta import relativedelta
 
 # Custom imports
 import datetime
@@ -35,46 +36,75 @@ def index(request,*kwargs):
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
         display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
-        recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
-        grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
+        #recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
+        #grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # Get recommended activities:
         # All upcoming activities whose categories have been joined by the user
-        with connection.cursor() as cursor:
-            cursor.execute(all_activities_sql+display_date_sql+recommended_categories_sql+
-                               grouping_sql+ordering_sql, [user_email])
-            recommended_activities = cursor.fetchall()
+        #with connection.cursor() as cursor:
+            #cursor.execute(all_activities_sql+display_date_sql+recommended_categories_sql+
+                               #grouping_sql+ordering_sql, [user_email])
+            #recommended_activities = cursor.fetchall()
 
-        # filtering method
+        
         if request.method == "POST":
-            categories = request.POST.getlist('categories')
+            # filtering method for categories
+            list_of_categories = request.POST.getlist('categories')
             category_filters = ""
+            category_filter_sql=""
+            
+            if len(list_of_categories)>0:
+                for category in categories:
+                    category_filters += " OR a.category="+"'"+category+"'"
+                category_filter_sql = " AND("+category_filters[3:]+")" 
 
-            for category in categories:
-                category_filters += " OR a.category="+"'"+category+"'"
-            category_filters = " AND("+category_filters[3:]+")"        
+            #filtering method for time
+            list_of_time_filters = request.POST.getlist('display_period')
+            time_filter_sql=""
+            #Check if any time filter is chosen
+            if len(list_of_time_filters)>0:
+                display_period = list_of_time_filters[0].split('_') # Need the values in HTML to be split with underscore
+                duration,unit = int(display_period[0]),display_period[1]
 
+                if unit == 'week':
+                    limit_time = (datetime.datetime.now()) + datetime.timedelta(weeks=duration)
+                elif unit == 'month':
+                    limit_time = (datetime.datetime.now()) + relativedelta(month=duration)
+                time_filter_sql = " AND a.start_date_time <"+limit_time.strftime("'%Y-%m-%d %H:%M:%S'")
+            
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+display_date_sql+category_filters+
-                               grouping_sql+ordering_sql)
+                cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql)
                 activities = cursor.fetchall()
+     
+
+            #with connection.cursor() as cursor:
+                #cursor.execute(all_activities_sql+display_date_sql+category_filters+
+                               #grouping_sql+ordering_sql)
+                #activities = cursor.fetchall()
 
         # Get all activities data from the database
+        #else:
+            #with connection.cursor() as cursor:
+                #cursor.execute(all_activities_sql+display_date_sql+grouping_sql+ordering_sql)
+                #activities = cursor.fetchall()
+        
         else:
             with connection.cursor() as cursor:
-                cursor.execute(all_activities_sql+display_date_sql+grouping_sql+ordering_sql)
+                cursor.execute(all_activities_sql+ordering_sql)
                 activities = cursor.fetchall()
-
         # Put all the records inside the dictionary context
-        context = {
-            'recommended_activities': recommended_activities,
-            'records': activities,
-            'full_name': request.session.get("full_name"),
-            'categories': categories,
-            'message':message
-        }
-
+        #context = {
+            #'recommended_activities': recommended_activities,
+            #'records': activities,
+            #'full_name': request.session.get("full_name"),
+            #'categories': categories,
+            #'message':message
+        #}
+        context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories}
+        if request.session.get("message",False):
+            context["message"]=request.session["message"]
+            del request.session["message"]
         return render(request, "index.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
@@ -200,6 +230,7 @@ def user_activity(request):
             list_of_rated_activities = cursor.fetchall()
 
             # Select activities created by administrators
+            #kenapa harus ada events yg admin buat ya?
             cursor.execute("SELECT * FROM activity a, users u WHERE a.inviter = u.email AND u.type = 'administrator' ORDER BY a.start_date_time ASC")
             list_of_activities_by_admin = cursor.fetchall()
 
