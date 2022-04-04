@@ -29,6 +29,7 @@ urlpatterns = [
 
     # Administrator pages
     path('admin_user', views.admin_user, name='admin_user'),
+    path('admin_inactive_users', views.admin_inactive_users, name='admin_inactive_users'),
     path('admin_user_create', views.admin_user_create, name='admin_user_create'),
     path('admin_user_edit/<str:edit_email>', views.admin_user_edit, name='admin_user_edit'),
     path('admin_user_delete/<str:delete_email>', views.admin_user_delete, name='admin_user_delete'),

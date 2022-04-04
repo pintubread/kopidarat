@@ -26,7 +26,8 @@
       {% endfor %}
     </table>
   </br>
-  <h3> Top 5 inactive users </h3>
+  <!--
+  <h3> Users who have never joined any activity </h3>
     <table border=1>
       <thead>
         <th> Username </th>
@@ -39,6 +40,7 @@
       </tr>
       {% endfor %}
     </table>
+  -->
   </br>
   <h3> Top 5 reviewed activities </h3>
     <table border=1>
@@ -131,6 +133,11 @@
     <h4>To see the list of users, click below</h4>
     <a href="/admin_user"> List of users </a>
     <br /><br />
+
+    <h4>To see the list of users who never joined any activity, click below</h4>
+    <a href="/admin_inactive_users"> List of users </a>
+    <br /><br />
+
     <h4>To see the list of activities, click below</h4>
     <a href="/admin_activity"> List of activities </a>
     <br /><br />

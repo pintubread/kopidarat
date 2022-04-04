@@ -449,9 +449,12 @@ def admin_index(request):
             list_of_active_users = cursor.fetchall()
 
             # Select the top 5 most inactive users (identified by usernames) based on the number of activities joined
-            cursor.execute(
-                'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
-            list_of_inactive_users = cursor.fetchall()
+            #cursor.execute(
+                #'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
+           #cursor.execute(
+                #'SELECT u.username FROM users u WHERE u.email NOT IN (SELECT j.participant FROM joins j)'
+            #)
+            #list_of_inactive_users = cursor.fetchall()
 
             # Select the top 5 activities with the most reviews, by counting the number of reviews
             cursor.execute('SELECT a.activity_id,a.activity_name, COUNT(r.comment) AS total_reviews FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY total_reviews DESC, a.activity_id ASC LIMIT 5')
@@ -467,7 +470,7 @@ def admin_index(request):
 
         context = {
             'list_of_active_users': list_of_active_users,
-            'list_of_inactive_users': list_of_inactive_users,
+            #'list_of_inactive_users': list_of_inactive_users,
             'list_of_reviewed_activities': list_of_reviewed_activities,
             'list_of_user_reports': list_of_user_reports,
             'list_of_activities_by_admin': list_of_activities_by_admin
@@ -506,6 +509,35 @@ def admin_user(request):
         return render(request, 'admin_user.html', context)
     else:
         return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_inactive_users(request):
+    '''
+    view function responsible for displaying the list of users who never participated in any activity.
+    Takes in the request and returns the rendering of the admin_user page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user page (path: /admin_user)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT u.full_name, u.username, u.email, u.phone_number, reports.num_reports_made FROM users u, (SELECT r.submitter as submitter, COUNT(*) AS num_reports_made FROM report r GROUP BY r.submitter) AS reports WHERE u.email NOT IN (SELECT j.participant FROM joins j) AND reports.submitter = u.email AND u.type<>'administrator'"
+            )
+            list_of_inactive_users = cursor.fetchall()
+
+        context['list_of_inactive_users'] = list_of_inactive_users
+
+        return render(request, 'admin_user.html', context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+    
+            
 
 
 def admin_user_create(request):
