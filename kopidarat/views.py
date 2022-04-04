@@ -26,6 +26,7 @@ def index(request,*kwargs):
     '''
     # Checking if user is logged in
     user_email = request.session.get("email", False)
+    message=''
     if kwargs:
         message=''.join(kwargs)
     if user_email is not False:
@@ -34,7 +35,7 @@ def index(request,*kwargs):
             categories = cursor.fetchall()
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
-        display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
+        #display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
         #recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
         #grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql = " ORDER BY a.start_date_time ASC"
