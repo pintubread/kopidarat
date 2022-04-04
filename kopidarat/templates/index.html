@@ -10,7 +10,9 @@
     flex-wrap: wrap;
     align-content: center;
     align-items: center;
+    font-family: 'Futura';
   }
+
 
   h1 {
     font-family: 'Sora';
@@ -21,15 +23,134 @@
   h2 {
     font-family: 'futura';
     color: black;
+    font-size: 40px;
   }
-
-  a {
-    margin-bottom: 10px;
-  }
-
-  option {
+  .content-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
   }
+
+  .content-table thead tr {
+    background-color: black;
+    color: #ffff;
+    text-align : center;
+    font-weight: bold;
+    font-family: 'Futura';
+  }
+
+  .content-table td {
+    padding : 12px 15px;
+  }
+
+  .content-table tbody tr {
+    border-bottom: 1px solid #17706c;
+    color: white;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    border-style: hidden;
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  table tbody tr:nth-child(odd)  {
+    background-color: #17706c;
+  }
+
+  table tbody tr:nth-child(even)  {
+    background-color: #749e9d;
+  }
+
+  thead {
+    font-family: 'Sora';
+    font-size: 16px;
+  }
+
+  th {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  button {
+    display: block;
+        width: 50%;
+        background: black;
+        color: white;
+        padding: 10px;
+        padding-left: 2px;
+        padding-right: 2px;       
+        border-radius: 7px;
+        margin-top: 20px;
+        cursor: pointer;
+        margin-bottom: 15px;
+        font-family: 'Futura';
+    }
+    a {
+      color: #1d1209; 
+      text-decoration: none;
+
+    }
+    .wrapper {
+        background-color: white;
+        border-radius: 1em;
+        padding: 5px 10px 20px 10px;
+        max-width: 800px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .control-label {
+      font-family:'Futura';
+      font-size: 15px;
+    }
+    select {
+      width:100%;
+      margin-top: 20px;
+    }
+    .controls {
+      width: 50%;
+    }
+
+    option {
+      font-family: 'Futura';
+      padding: 5px;
+      text-align: center;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+
+    }
+    .row a {
+      margin-left: 4px;
+      margin-right: 4px;
+    }
+
+    a {
+      color: #FF8415;
+    }
+    .clearselection a {
+      color:#17706c;
+    }
+
 </style>
 
 <html>
@@ -41,47 +162,57 @@
     <div>{{ message }}</div>
       {% endif %}
       <h1>Hello {{full_name}}!</h1>  
-      <h2> Available Activities </h2>
-      <form action="{% url 'index' %}" method="post">
-        {% csrf_token %}
-        <label for="category_id" class="control-label requiredField">Categories (multi-select with ctrl)</label> 
-        <div class="controls"><select name="categories" id="categories" multiple size="10">
-          {% for category in categories %}
-          <option value="{{category.0}}" >{{category.0}}</option>
-          {% endfor %} 
-          </select> </div>
-        <button type="submit">Apply Filter</button>
-        <a href="{% url 'index' %}">Clear Selections</a>
-      </form>
+      <div class="wrapper">
+        <h2> Available Activities </h2>
+        <form action="{% url 'index' %}" method="post">
+          {% csrf_token %}
+          <label for="category_id" class="control-label requiredField">Categories (multi-select with ctrl)</label> 
+          <div class="controls">
+            <select name="categories" id="categories" multiple size="10">
+              {% for category in categories %}
+              <option value="{{category.0}}" >{{category.0}}</option>
+              {% endfor %} 
+            </select>
+          </div>
+          <button type="submit">Apply Filter</button>
+          <div class="clearselection">
+            <a href="{% url 'index' %}">Clear Selections</a>
+          </div>
+        </form>
+        <div class="row">
+          <a href='create_activity'> New Activity </a>
+          <a href='review'> New Review </a>
+          <a href='report'> New Report </a>
+          <a href='user_activity'> Your Activities </a>
+          <a href='logout'> Logout </a>
+        </div>
+      </div>
     </div>
 
-    <a href='create_activity'> New Activity </a>
-    <a href='review'> New Review </a>
-    <a href='report'> New Report </a>
-    <a href='user_activity'> Your Activities </a>
-    <a href='logout'> Logout </a>
-    <table>
-      <thead>
-        <th> Activity ID</th>
-        <th> Activity Name </th>
-        <th> Inviter </th>
-        <th> Category </th>
-        <th> Start Date Time </th>
-        <th> Venue </th>
-        <th> Capacity </th>
-        <th> Join </th>
-      </thead>
-      {% for activity in records %}
-      <tr>
-        <td>{{ activity.0 }}</td>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.1 }}</td>
-        <td>{{ activity.2 }}</td>
-        <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>
-        <td>{{ activity.6 }}</td>>
-        <td><a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
-      </tr>
+      <div class="content-table">
+      <table>
+        <thead>
+          <th> Activity ID</th>
+          <th> Activity Name </th>
+          <th> Inviter </th>
+          <th> Category </th>
+          <th> Start Date Time </th>
+          <th> Venue </th>
+          <th> Capacity </th>
+          <th> Join </th>
+        </thead>
+        {% for activity in records %}
+        <tr>
+          <td>{{ activity.0 }}</td>
+          <td>{{ activity.3 }}</td>
+          <td>{{ activity.1 }}</td>
+          <td>{{ activity.2 }}</td>
+          <td>{{ activity.4 }}</td>
+          <td>{{ activity.5 }}</td>
+          <td>{{ activity.6 }}</td>>
+          <td><a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
+        </tr>
+      </div>
       {% endfor %}
   </body>
 </html>

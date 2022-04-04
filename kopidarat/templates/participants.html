@@ -4,6 +4,68 @@
       color: black;
       text-align: center;
       background-color: #FF8415 ;
+      font-family: 'Futura';
+  }
+  h2 {
+    font-size: 50px;
+    font-family: 'Sora'
+  }
+
+  .content-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .content-table thead {
+    background-color: black;
+    color: #ffff;
+    text-align : center;
+    font-weight: bold;
+    font-family: 'Futura';
+  }
+
+  .content-table td {
+    padding : 12px 15px;
+  }
+
+  .content-table tbody tr {
+    border-bottom: 1px solid #17706c;
+    color: white;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    border-style: hidden;
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  table tbody tr:nth-child(odd)  {
+    background-color: #17706c;
+  }
+
+  table tbody tr:nth-child(even)  {
+    background-color: #749e9d;
+  }
+
+  thead {
+    font-family: 'Sora';
+    font-size: 16px;
+  }
+
+  th {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  a {
+    color: #17706c;
+    text-decoration: none;
+    font-size: 20px;
   }
 </style>
 <html>
@@ -11,14 +73,15 @@
     <title>{{activity_name}}</title>
   </head>
   <body>
-    <h2>People joining this activity</h2>
-    <br/><br>
-    <table border="1">
+    <h2>Participants</h2>
+    <div class="content-table">
+    <table>
       <thead>
         <th>Name</th>
         <th>Email</th>
         <th>Phone Number</th>
       </thead>
+      <tbody>
       {% for participant in participants %}
       <tr>
         <td>{{ participant.0 }}</td>
@@ -26,9 +89,11 @@
         <td>{{ participant.2 }}</td>
       </tr>
       {% endfor %}
+      </tbody>
     </table>
     <br />
     <br />
     <a href="/user_activity"> Back to Your Activities</a>
+  </div>
   </body>
 </html>

@@ -6,37 +6,82 @@ body {
     text-align: center;
     background-color: #FF8415 ;
 }
+
+h2 {
+    font-size: 50px;
+    font-family: 'Sora'
+  }
+
 .content-table {
-  border-collapse: collapse;
-  margin: 25px 0;
-  min-width: 400px;
-}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
 
-.content-table thead tr {
-  background-color: black;
-  color: #ffff;
-  text-align : center;
-  font-weight: bold;
+  .content-table thead tr {
+    background-color: black;
+    color: #ffff;
+    text-align : center;
+    font-weight: bold;
+    font-family: 'Futura';
+  }
 
-}
+  .content-table td {
+    padding : 12px 15px;
+  }
 
-.content-table td {
-  padding : 12px 15px;
-}
+  .content-table tbody tr {
+    border-bottom: 1px solid #17706c;
+    color: white;
+  }
 
-.content-table tbody tr {
-  border-bottom: 1px solid #17706c;
-  color: white;
-  background-color: #17706c
-}
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    border-style: hidden;
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  table tbody tr:nth-child(odd)  {
+    background-color: #17706c;
+  }
+
+  table tbody tr:nth-child(even)  {
+    background-color: #749e9d;
+  }
+
+  thead {
+    font-family: 'Sora';
+    font-size: 16px;
+  }
+
+  th {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .text1 a {
+    color: #17706c;
+  }
+
+  a {
+    color: #FF8415;
+    text-decoration: none;
+    font-family: 'Futura';
+    font-size: 20px;
+  }
 </style>
 <html>
   <body>
-    <h2>List of users using the app</h2>
-    <br />
+    <h2>Users</h2>
+    <div class="text1">
     <a href="/admin_index"> Back to Main Page </a>
+    </div>
     <div class="content-table">
-    <table border="1">
+    <table >
       <thead>
         <th>Full Name</th>
         <th>Username</th>
@@ -46,34 +91,35 @@ body {
         <th>Edit User</th>
         <th>Delete User</th>
       </thead>
-      {% for user in list_of_users %}
-      <tr>
-        <td>{{ user.0 }}</td>
-        <td>{{ user.1 }}</td>
-        <td>{{ user.2 }}</td>
-        <td>{{ user.3 }}</td>
-        <td>{{ user.5 }}</td>
-        <td>
-          <a
-            class="button"
-            href="admin_user_edit/{{ user.2 }}"
-            class="text-decoration-none"
-          >
-            Edit
-          </a>
-        </td>
-        <td>
-          <a
-            class="button"
-            href="admin_user_delete/{{ user.0 }}"
-            class="text-decoration-none"
-          >
-            Delete
-          </a>
-        </td>
-      </tr>
-
-      {% endfor %}
+      <tbody>
+        {% for user in list_of_users %}
+        <tr>
+          <td>{{ user.0 }}</td>
+          <td>{{ user.1 }}</td>
+          <td>{{ user.2 }}</td>
+          <td>{{ user.3 }}</td>
+          <td>{{ user.5 }}</td>
+          <td>
+            <a
+              class="button"
+              href="admin_user_edit/{{ user.2 }}"
+              class="text-decoration-none"
+            >
+              Edit
+            </a>
+          </td>
+          <td>
+            <a
+              class="button"
+              href="admin_user_delete/{{ user.0 }}"
+              class="text-decoration-none"
+            >
+              Delete
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+    </tbody>
     </table>
     </div>
   </body>

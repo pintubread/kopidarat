@@ -2,14 +2,28 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
   body {
-    color: black;
-    text-align: center;
-    background-color: #FF8415 ;
+      color: black;
+      text-align: center;
+      background-color: #FF8415 ;
+  }
+  h2 {
+    font-family: 'Sora';
+    font-size: 50px;
+  }
+  h3 {
+    font-family: 'Futura';
+    font-size: 30px;
+  }
+  h4 {
+    font-family: 'Futura';
+    font-size: 20px;
   }
 
   .content-table {
-    border-collapse: collapse;
-    margin: 25px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
   .content-table thead tr {
@@ -17,7 +31,7 @@
     color: #ffff;
     text-align : center;
     font-weight: bold;
-
+    font-family: 'Futura';
   }
 
   .content-table td {
@@ -27,17 +41,57 @@
   .content-table tbody tr {
     border-bottom: 1px solid #17706c;
     color: white;
-    background-color: #17706c
+    font-family: 'Futura';
   }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    border-style: hidden;
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  table tbody tr:nth-child(odd)  {
+    background-color: #17706c;
+  }
+
+  table tbody tr:nth-child(even)  {
+    background-color: #749e9d;
+  }
+
+  thead {
+    font-family: 'Sora';
+    font-size: 16px;
+  }
+
+  th {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  .text1 a {
+    color: #17706c;
+  }
+
+  a {
+    color: #FF8415 ;
+    text-decoration: none;
+    font-family: 'Futura';
+    font-size: 20px;
+  }
+
 </style>
 
 <html>
   <body>
     <div class="content-table">
-      <h2>List of reports made by users</h2>
+      <h2>User Reports</h2>
       <br />
+      <div class="text1">
       <a href="/admin_index"> Back to Main Page </a>
-      <table border="1">
+      </div>
+      <table>
         <thead>
           <th>Submitter</th>
           <th>Timestamp</th>
@@ -46,6 +100,7 @@
           <th>Severity</th>
           <th>Delete Report</th>
         </thead>
+        <tbody>
         {% for report in list_of_reports %}
         <tr>
           <td>{{ report.0 }}</td>
@@ -64,6 +119,7 @@
           </td>
         </tr>
         {% endfor %}
+      </tbody>
       </table>
     </div>
   </body>

@@ -1,15 +1,11 @@
-
-<div class="container">
-<h1>Welcome to KopiDarat!</h1>
-<h2>Wanna play golf but cannot find friends to play with you? Wanna try out traditional Japanese tea ceremony but cannot find anyone else who seems interested?
-</h2>
-{% load static %}
 <style> 
     @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
     body {
         color: black;
         text-align: center;
         background-color: #FF8415;
+        font-family: 'Futura';
+        width: 100%;
     }
     h1 {
         font-family: 'Sora';
@@ -20,6 +16,8 @@
     h2 {
         font-family: 'futura';
         color: black;
+        font-size: 20px;
+   
     }
     .container {
         max-width: 500px;
@@ -30,27 +28,110 @@
         text-decoration: underline;
     }
     .dark {
-        background-color: #FF8415;    }
+        background-color: #FF8415;    
+    }
+
+    .wrapper {
+        background-color: white;
+        border-radius: 1em;
+        padding: 5px 100px 20px 100px;
+        max-width: 800px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 100px;
+        margin-top: 100px;
+    }
+    html {
+        display: flex;
+        flex-direction: column;
+        align-items:center;
+        width: 100%;
+    }
+
+    .content-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .content-table thead tr {
+    background-color: black;
+    color: #ffff;
+    text-align : center;
+    font-weight: bold;
+    font-family: 'Futura';
+  }
+
+  .content-table td {
+    padding : 12px 15px;
+  }
+
+  .content-table tbody tr {
+    border-bottom: 1px solid #17706c;
+    color: white;
+    font-family: 'Futura';
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    border-style: hidden;
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  table tbody tr:nth-child(odd)  {
+    background-color: #17706c;
+  }
+
+  table tbody tr:nth-child(even)  {
+    background-color: #749e9d;
+  }
+
+  thead {
+    font-family: 'Sora';
+    font-size: 16px;
+  }
+
+  th {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  a {
+    color: #17706c;
+    text-decoration: underline;
+    font-family: 'Futura';
+    font-size: 15px;
+  }
+
+
+
 
 </style>
-<br></br>
+<html>
+    <body>
+        <div class="wrapper">
+        <h1>Welcome to KopiDarat!</h1>
+    <h2>Wanna play golf but cannot find friends to play with you? Wanna try out traditional Japanese tea ceremony but cannot find anyone else who seems interested?</h2>
+{% load static %}
+
     <h2>
-    <div id="box-1" class="box">
         It's time you join (or organise!) a kopi darat -- a casual meetup among random people interested in taking part in the same activities as you.
-    </div>
-    <div class="curve"> </div>
-    <div class="dark"> </div>
     </h2>
-    <br></br>
     <h2>
     With <strong>{{activity_count}}</strong> activities and <strong>{{user_count}}</strong> users, we are excited to connect you with exciting new possibilities!
     </h2>
-    <br></br>
     <h2>
     Check out the types of activities we host below!
     </h2>
-        <br/><br/>
-        <table border=1> 
+        <div class="content-table">
+        <table> 
         <thead>
             <th> Category</th>
             <th> Number of activities </th>
@@ -62,14 +143,14 @@
         </tr>
         {%endfor%}
         </table>
-    <br></br>
+        </div>
     <h3>
     Interested? <a href='register'> Sign up now. </a> 
     </h3>
-    <br>
-    <br> 
+
     <h3>
     Already a member? <a href='login'> Login here. </a>
     </h3>
-</div>
 <div id="box-2" class="box"> </div>
+</body>
+</html>
