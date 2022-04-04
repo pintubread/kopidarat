@@ -1,4 +1,39 @@
 {% load static %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
+body {
+    color: black;
+    text-align: center;
+    background-color: #FF8415 ;
+}
+h2 {
+  font-family: 'Sora';
+  font-size: 70px;
+}
+.content-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  min-width: 400px;
+}
+
+.content-table thead tr {
+  background-color: black;
+  color: #ffff;
+  text-align : center;
+  font-weight: bold;
+
+}
+
+.content-table td {
+  padding : 12px 15px;
+}
+
+.content-table tbody tr {
+  border-bottom: 1px solid #17706c;
+  color: white;
+  background-color: #17706c
+}
+</style>
 <html>
   <body>
     <h2>List of activities</h2>
@@ -6,6 +41,8 @@
     <a href="/admin_activity_create"> Create new activity </a>
     <br />
     <a href="/admin_index"> Back to Main Page </a>
+
+  <div class="content-table">
     <table border="1">
       <thead>
         <th>Activity ID</th>
@@ -50,5 +87,7 @@
       </tr>
       {% endfor %}
     </table>
+    </div>
+
   </body>
 </html>
