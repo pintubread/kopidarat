@@ -39,7 +39,7 @@ def index(request,*kwargs):
         
         # Get recommended activities:
         # All upcoming activities whose categories have been joined by the user
-        recommendations_sql="AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant="+user_email+" GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
+        recommendations_sql=" AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant="+user_email+" GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
         with connection.cursor() as cursor:
             cursor.execute(all_activities_sql+recommendations_sql+ordering_sql)
             recommended_activities = cursor.fetchall()
