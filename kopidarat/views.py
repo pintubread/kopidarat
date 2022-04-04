@@ -35,17 +35,18 @@ def index(request,*kwargs):
             categories = cursor.fetchall()
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
-        #display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
-        #recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
-        #grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # Get recommended activities:
         # All upcoming activities whose categories have been joined by the user
-        #with connection.cursor() as cursor:
-            #cursor.execute(all_activities_sql+display_date_sql+recommended_categories_sql+
-                               #grouping_sql+ordering_sql, [user_email])
-            #recommended_activities = cursor.fetchall()
+        recommendations_sql="AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant="+user_email+" GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
+        with connection.cursor() as cursor:
+            cursor.execute(all_activities_sql+recommendations_sql+ordering_sql)
+            recommended_activities = cursor.fetchall()
+        
+        #display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
+        #recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
+        #grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
 
         
         if request.method == "POST":
@@ -101,10 +102,11 @@ def index(request,*kwargs):
             #'categories': categories,
             #'message':message
         #}
-        context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories,'message':message}
-        if request.session.get("message",False):
-            context["message"]=request.session["message"]
-            del request.session["message"]
+        context = {'recommended_activities':recommended_activities,
+        'records' : activities,
+        'full_name':request.session.get("full_name"),
+        'categories':categories,
+        'message':message}
         return render(request, "index.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
@@ -360,7 +362,7 @@ def participants(request, activity_id):
     return HttpResponseRedirect(reverse("index"))
 
 
-def create_review(request):
+def create_review(request,activity_id):
     '''
     create_review view function which is responsible for the creating review page.
     Takes in the request and returns a render function to render the review page.
@@ -371,11 +373,13 @@ def create_review(request):
     '''
     user_email = request.session.get("email", False)
     message = ""
+    context={}
     if user_email is not False:
-
-        if request.method == 'POST':
-
-            with connection.cursor() as cursor:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
+            activity_details = cursor.fetchone()
+            context["activity_details"]=activity_details
+            if request.method == 'POST':
                 try:
                     cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
                                 request.POST['activity_id'], datetime.datetime.now(
@@ -383,11 +387,8 @@ def create_review(request):
                                 request.POST['comment']
                             ])
                 except Exception as e:
-                    sql_message = str(e)
-                    if 'violates foreign key constraint' in sql_message:
-                        message='There exists no activity with activity id '+request.POST['activity_id']+', hence your review is not valid.'
-                    else:
-                        message = sql_message
+                    message=str(e)
+                    context["message"]=message
 
         return render(request, 'review.html', {"message": message})
     else:
