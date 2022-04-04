@@ -93,6 +93,22 @@ table,tr,td {
       {% endfor %}
     </table>
   </br>
+  <h3> Top 5 rated activities </h3>
+  <table border=1>
+    <thead>
+      <th> Activity ID </th>
+      <th> Activity Name </th>
+      <th> Number of Reviews </th>
+    </thead>
+    {% for review in list_of_rated_activities %}
+    <tr>
+      <td>{{ review.0 }}</td>
+      <td>{{ review.1 }}</td>
+      <td>{{ review.2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</br>
   <h3> Top 5 most reported users (with severity Medium or higher) </h3>
     <table>
       <thead>
@@ -103,6 +119,48 @@ table,tr,td {
       <tr>
         <td>{{ user.0 }}</td>
         <td>{{ user.1 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </br>
+  <h3> Activities Created by Admin </h3>
+    <table border="1">
+      <thead>
+        <th>Activity Name</th>
+        <th>Inviter</th>
+        <th>Category</th>
+        <th>Start Date Time</th>
+        <th>Venue</th>
+        <th>Capacity</th>
+        <th>Edit Activity</th>
+        <th>Participants List</th>
+      </thead>
+      {% for activity in list_of_activities_by_admin %}
+      <tr>
+        <td>{{ activity.3 }}</td>
+        <td>{{ activity.7 }}</td>
+        <td>{{ activity.2 }}</td>
+        <td>{{ activity.4 }}</td>
+        <td>{{ activity.5 }}</td>
+        <td>{{ activity.6 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_activity_edit/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Edit
+          </a>
+        </td>
+        <td>
+          <a
+            class="button"
+            href="participants/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Participants List
+          </a>
+        </td>
       </tr>
       {% endfor %}
     </table>

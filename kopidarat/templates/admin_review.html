@@ -35,33 +35,37 @@
     <h2>List of reviews of the activities</h2>
     <br />
     <a href="/admin_index"> Back to Main Page </a>
-    <div class="content-table">
-      <table>
-        <thead>
-          <th>Activity ID</th>
-          <th>Timestamp</th>
-          <th>Participant</th>
-          <th>Comment</th>
-          <th>Delete Review</th>
-        </thead>
-        {% for review in list_of_reviews %}
-        <tr>
-          <td>{{ review.0 }}</td>
-          <td>{{ review.1 }}</td>
-          <td>{{ review.2 }}</td>
-          <td>{{ review.3 }}</td>
-          <td>
-            <a
-              class="button"
-              href="admin_review_delete/{{ review.0 }}/{{ review.1 }}/{{ review.2 }}"
-              class="text-decoration-none"
-            >
-              Delete
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
+
+  <div class="content-table">
+    <table border="1">
+      <thead>
+        <th>Activity ID</th>
+        <th>Timestamp</th>
+        <th>Participant</th>
+        <th>Rating</th>
+        <th>Comment</th>
+        <th>Delete Review</th>
+      </thead>
+      {% for review in list_of_reviews %}
+      <tr>
+        <td>{{ review.0 }}</td>
+        <td>{{ review.1 }}</td>
+        <td>{{ review.2 }}</td>
+        <td>{{ review.3 }}</td>
+        <td>{{ review.4 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_review_delete/{{ review.0 }}/{{ review.1 }}/{{ review.2 }}"
+            class="text-decoration-none"
+          >
+            Delete
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
     </div>
+
   </body>
 </html>
