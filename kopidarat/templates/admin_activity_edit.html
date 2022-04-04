@@ -13,7 +13,10 @@
       <body>
         <h2>Update Activity</h2>
         <a href="/admin_activity">Back to the list of activities</a>
-
+        <br />
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
         <form method="POST">
           {% csrf_token %} Activity Name
           <div class="form-group">
@@ -26,7 +29,6 @@
           </div>
           Category
           <div class="form-group">
-            <!-- Currently the type is still in text, should change to radio button -->
             <input type="text" name="category" value="{{this_activity.2}}" />
           </div>
           Start Date Time
@@ -37,9 +39,17 @@
               value="{{this_activity.4}}"
             />
           </div>
+          End Date Time
+          <div class="form-group">
+            <input
+              type="datetime-local"
+              name="start_date_time"
+              value="{{this_activity.5}}"
+            />
+          </div>
           Venue
           <div class="form-group">
-            <input type="text" name="venue" value="{{this_activity.5}}" />
+            <input type="text" name="venue" value="{{this_activity.6}}" />
           </div>
           Capacity
           <div class="form-group">
@@ -48,8 +58,8 @@
               type="number"
               name="capacity"
               min="2"
-              max="6"
-              value="{{this_activity.6}}"
+              max="10"
+              value="{{this_activity.7}}"
             />
           </div>
           <input

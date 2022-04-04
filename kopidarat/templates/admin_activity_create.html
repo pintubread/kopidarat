@@ -10,8 +10,12 @@
   </head>
   <body>
     <h2>Add New Activity</h2>
-    <a href="admin_activity">Back to list of activities</a>
 
+    <a href="admin_activity">Back to list of activities</a>
+    <br />
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
     <form action="{% url 'create_activity' %}" method="post">
       {% csrf_token %} Activity Name
       <div class="form-group">
@@ -41,6 +45,14 @@
           name="start_date_time"
         />
       </div>
+      End Date and Time
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="datetime-local"
+          name="end_date_time"
+        />
+      </div>
       Venue
       <div class="form-group">
         <input
@@ -57,8 +69,8 @@
           type="number"
           name="capacity"
           min="2"
-          max="6"
-          placeholder="Capacity (between 2 to 6)"
+          max="10"
+          placeholder="Capacity (between 2 to 10)"
         />
       </div>
       <input class="btn btn-primary" type="submit" value="Create Activity" />

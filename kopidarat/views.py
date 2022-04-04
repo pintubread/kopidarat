@@ -10,6 +10,8 @@ from dateutil.relativedelta import relativedelta
 # Custom imports
 import datetime
 
+from zmq import Message
+
 # View Functions for main pages for the member's side of the website
 
 
@@ -34,7 +36,7 @@ def index(request,*kwargs):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND a.start_date_time > NOW()"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # Get recommended activities:
@@ -44,10 +46,6 @@ def index(request,*kwargs):
             cursor.execute(all_activities_sql+recommendations_sql+ordering_sql)
             recommended_activities = cursor.fetchall()
         
-        #display_date_sql = " AND (a.start_date_time - NOW()) > '0 day'"
-        #recommended_categories_sql = " AND a.category IN (SELECT a1.category FROM joins j1, activity a1 WHERE j1.activity_id = a1.activity_id AND a1.inviter <> j1.participant AND j1.participant = %s AND NOW() > a1.start_date_time AND a1.activity_id NOT IN (SELECT a2.activity_id FROM activity a2 WHERE NOW() <= a2.start_date_time ORDER BY a2.start_date_time ASC))"
-        #grouping_sql = " GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity"
-
         
         if request.method == "POST":
             # filtering method for categories
@@ -56,7 +54,7 @@ def index(request,*kwargs):
             category_filter_sql=""
             
             if len(list_of_categories)>0:
-                for category in categories:
+                for category in list_of_categories:
                     category_filters += " OR a.category="+"'"+category+"'"
                 category_filter_sql = " AND("+category_filters[3:]+")" 
 
@@ -77,31 +75,13 @@ def index(request,*kwargs):
             with connection.cursor() as cursor:
                 cursor.execute(all_activities_sql + category_filter_sql + time_filter_sql + ordering_sql)
                 activities = cursor.fetchall()
-     
-
-            #with connection.cursor() as cursor:
-                #cursor.execute(all_activities_sql+display_date_sql+category_filters+
-                               #grouping_sql+ordering_sql)
-                #activities = cursor.fetchall()
-
-        # Get all activities data from the database
-        #else:
-            #with connection.cursor() as cursor:
-                #cursor.execute(all_activities_sql+display_date_sql+grouping_sql+ordering_sql)
-                #activities = cursor.fetchall()
         
         else:
             with connection.cursor() as cursor:
                 cursor.execute(all_activities_sql+ordering_sql)
                 activities = cursor.fetchall()
+
         # Put all the records inside the dictionary context
-        #context = {
-            #'recommended_activities': recommended_activities,
-            #'records': activities,
-            #'full_name': request.session.get("full_name"),
-            #'categories': categories,
-            #'message':message
-        #}
         context = {'recommended_activities':recommended_activities,
         'records' : activities,
         'full_name':request.session.get("full_name"),
@@ -123,6 +103,7 @@ def create_activity(request):
     '''
     # Check if user is logged in
     user_email = request.session.get("email", False)
+    message = ''
 
     if user_email is not False:
         context = {}
@@ -134,11 +115,14 @@ def create_activity(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
-                cursor.execute('CALL create_new_activity(%s,%s,%s,%s,%s,%s)',[
-                    user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['venue'], request.POST['capacity']])
-                return HttpResponseRedirect(reverse("user_activity"))
-        else:
-            return render(request, 'create_activity.html', context)
+                try:
+                    cursor.execute('CALL create_new_activity(%s,%s,%s,%s,%s,%s,%s)',[
+                        user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['end_date_time'],request.POST['venue'], request.POST['capacity']])
+                except Exception as e:
+                    message = str(e)
+        
+        context['message'] = message
+        return render(request, 'create_activity.html', context)
     return HttpResponseRedirect(reverse("index"))
 
 
@@ -165,8 +149,8 @@ def join(request, activity_id):
                 message='You have successfully registered for this activity!'
             except IntegrityError:
                 message='You have registered for this activity.'
-            except Exception:
-                message='We regret to inform you that the activity has reached its maximum capacity.'
+            except Exception as e:
+                message=str(e)
             
     return index(request,message)
 
@@ -210,7 +194,7 @@ def user_activity(request):
             upcoming_activities_list = cursor.fetchall()
 
             # Get the table of past activities created by other user where the user has joined
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue,a.end_date_time FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             joined_activities_list = cursor.fetchall()
@@ -228,13 +212,8 @@ def user_activity(request):
             reports_list = cursor.fetchall()
 
             # Select the top 5 activities with the highest average rating
-            cursor.execute('SELECT a.activity_id,a.activity_name, AVG(r.rating)::NUMERIC(10,2) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
+            cursor.execute('SELECT a.activity_id,a.activity_name, CAST(AVG(r.rating) AS NUMERIC(10,2)) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
             list_of_rated_activities = cursor.fetchall()
-
-            # Select activities created by administrators
-            #kenapa harus ada events yg admin buat ya?
-            cursor.execute("SELECT * FROM activity a, users u WHERE a.inviter = u.email AND u.type = 'administrator' ORDER BY a.start_date_time ASC")
-            list_of_activities_by_admin = cursor.fetchall()
 
         context['user_fullname'] = request.session.get('full_name')
         context['past_inviter_list'] = past_inviter_list
@@ -244,8 +223,6 @@ def user_activity(request):
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
         context['list_of_rated_activities'] = list_of_rated_activities
-        context['list_of_activities_by_admin'] = list_of_activities_by_admin
-
 
         return render(request, 'user_activity.html', context)
 
@@ -266,6 +243,7 @@ def update_activity(request, activity_id):
     '''
     user_email = request.session.get("email", False)
     context={}
+    message=''
 
     if user_email is not False:
 
@@ -276,18 +254,20 @@ def update_activity(request, activity_id):
 
         if request.method == 'POST':  # TODO: catch error when there's no post method, e.g. cancel to create activity
             with connection.cursor() as cursor:
+                try:
+                    # Execute SQL query to update the values for the particular instance
+                    cursor.execute('UPDATE activity SET activity_name = %s, category = %s, start_date_time = %s,end_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
+                        request.POST['activity_name'], request.POST['category'], request.POST[
+                            'start_date_time'], request.POST['end_date_time'],request.POST['venue'], request.POST['capacity'], activity_id
+                    ])
+                    cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
+                    this_activity = cursor.fetchone()
+                except Exception as e:
+                    message = str(e)
 
-                # Execute SQL query to update the values for the particular instance
-                cursor.execute('UPDATE activity SET activity_name = %s, category = %s, start_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
-                    request.POST['activity_name'], request.POST['category'], request.POST[
-                        'start_date_time'], request.POST['venue'], request.POST['capacity'], activity_id
-                ])
-                cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
-                this_activity = cursor.fetchone()
-            return HttpResponseRedirect(reverse("user_activity"))
-
+        context['message'] = message
         context['this_activity'] = this_activity
-        return render(request,'admin_activity_edit.html',context)
+        return render(request,'update_activity.html',context)
 
     return HttpResponseRedirect(reverse("index"))
 
@@ -358,7 +338,6 @@ def participants(request, activity_id):
             message="You are not registered for this activity, hence you are not authorised to view this page."
             return index(request,message)
 
-    # TODO:to add additional message saying user is not registered for the activity
     return HttpResponseRedirect(reverse("index"))
 
 
@@ -374,11 +353,15 @@ def create_review(request,activity_id):
     user_email = request.session.get("email", False)
     message = ""
     context={}
+
     if user_email is not False:
+
         with connection.cursor() as cursor:
             cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
+            
             activity_details = cursor.fetchone()
             context["activity_details"]=activity_details
+
             if request.method == 'POST':
                 try:
                     cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
@@ -388,8 +371,8 @@ def create_review(request,activity_id):
                             ])
                 except Exception as e:
                     message=str(e)
-                    context["message"]=message
-
+                    
+        context["message"]=message
         return render(request, 'review.html', {"message": message})
     else:
         return HttpResponseRedirect(reverse("index"))
@@ -491,10 +474,8 @@ def admin_user(request):
 
         context = dict()
 
-        # TODO: Make a CRUD for the admin site
         with connection.cursor() as cursor:
             # Get the list of users
-            # Find out last activity of users
             cursor.execute(
                 'SELECT * FROM users ORDER BY type ASC, full_name ASC')
             list_of_users = cursor.fetchall()
@@ -526,22 +507,24 @@ def admin_user_create(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
+                try:
+                    created_user_type = request.POST['type']
 
-                created_user_type = request.POST['type']
+                    cursor.execute('INSERT INTO users (full_name,username,email,phone_number,password,type) VALUES (%s,%s,%s,%s,%s,%s)', [
+                        request.POST['full_name'], request.POST['username'], request.POST[
+                            'email'], request.POST['phone_number'], request.POST['password'], request.POST['type']
+                    ])
 
-                cursor.execute('INSERT INTO users (full_name,username,email,phone_number,password,type) VALUES (%s,%s,%s,%s,%s,%s)', [
-                    request.POST['full_name'], request.POST['username'], request.POST[
-                        'email'], request.POST['phone_number'], request.POST['password'], request.POST['type']
-                ])
-
-                if created_user_type == 'member':
-                    cursor.execute('INSERT INTO member (email) VALUES (%s)', [
-                                   request.POST['email']])
-                elif created_user_type == 'administrator':
-                    cursor.execute('INSERT INTO administrator (email) VALUES (%s)', [
-                                   request.POST['email']])
-                else:
-                    message = 'Please indicate a right user type'
+                    if created_user_type == 'member':
+                        cursor.execute('INSERT INTO member (email) VALUES (%s)', [
+                                    request.POST['email']])
+                    elif created_user_type == 'administrator':
+                        cursor.execute('INSERT INTO administrator (email) VALUES (%s)', [
+                                    request.POST['email']])
+                    else:
+                        message = 'Please indicate a right user type'
+                except Exception as e:
+                    message = str(e)
 
         context['message'] = message
         return render(request, 'admin_user_create.html', context)
@@ -562,6 +545,7 @@ def admin_user_edit(request, edit_email):
     user_email = request.session.get('email', False)
     user_type = request.session.get('type')
     context = {}
+    message = ''
 
     if user_type == 'administrator' and user_email is not False:
 
@@ -572,21 +556,19 @@ def admin_user_edit(request, edit_email):
 
         if request.method == 'POST':
             with connection.cursor() as cursor:
-
-                cursor.execute('UPDATE users SET full_name = %s, username = %s, phone_number = %s, password = %s, type = %s WHERE email = %s', [
-                    request.POST['full_name'], request.POST['username'], request.POST[
-                        'phone_number'], request.POST['password'], request.POST['type'], edit_email
-                ])
-                cursor.execute(
-                    'SELECT * FROM users WHERE email = %s', [edit_email])
-                obj = cursor.fetchone()
-
-            return HttpResponseRedirect(reverse('admin_user'))
-
-        # else:
-            # return render(request,'admin_user_edit.html',context)
+                try:
+                    cursor.execute('UPDATE users SET full_name = %s, username = %s, phone_number = %s, password = %s, type = %s WHERE email = %s', [
+                        request.POST['full_name'], request.POST['username'], request.POST[
+                            'phone_number'], request.POST['password'], request.POST['type'], edit_email
+                    ])
+                    cursor.execute(
+                        'SELECT * FROM users WHERE email = %s', [edit_email])
+                    obj = cursor.fetchone()
+                except Exception as e:
+                    message = str(e)
 
         context['obj'] = obj
+        context['message'] = message
         return render(request, 'admin_user_edit.html', context)
 
     return HttpResponseRedirect(reverse('admin_index'))
@@ -616,14 +598,14 @@ def admin_user_delete(request, delete_email):
                 delete_type = cursor.fetchone()
 
                 # check which type, to correctly initiate the ON DELETE CASCADE
-                cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
-
                 # also check so that the admin does not delete him/herself
                 if delete_type == 'administrator' and user_email != delete_email:
+                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
                     cursor.execute(
                         'DELETE FROM administrator WHERE email = %s', [delete_email])
                     # TODO: pops up the message if the admin is trying to delete him/herself
                 elif delete_type == 'member':
+                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
                     cursor.execute(
                         'DELETE FROM member WHERE email = %s', [delete_email])
 
@@ -650,7 +632,7 @@ def admin_activity(request):
 
         with connection.cursor() as cursor:
             # Get the list of activities
-            cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND count_participant.count <= a.capacity GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity ORDER BY a.start_date_time ASC')
+            cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity, a.end_date_time FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND count_participant.count <= a.capacity GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity ORDER BY a.start_date_time ASC')
             list_of_activities = cursor.fetchall()
 
         context['list_of_activities'] = list_of_activities
@@ -681,29 +663,14 @@ def admin_activity_create(request):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
-
-                # TODO: Add the checking of inputs
-                # Insert the activity into the database
-                cursor.execute('INSERT INTO activity (inviter,activity_name,category,start_date_time,venue,capacity) VALUES (%s,%s,%s,%s,%s,%s)', [
-                    request.session.get(
-                        "email"), request.POST['activity_name'], request.POST['category'], request.POST['start_date_time'],
-                    request.POST['venue'], request.POST['capacity']
-                ])
-                # Get the activity details
-                cursor.execute('SELECT activity_id FROM activity WHERE inviter =  %s AND activity_name = %s AND category = %s AND start_date_time = %s AND venue = %s AND capacity = %s', [
-                    request.session.get(
-                        "email"), request.POST['activity_name'], request.POST['category'], request.POST['start_date_time'],
-                    request.POST['venue'], request.POST['capacity']
-                ])
-                activity_id = cursor.fetchone()
-                # Joining the current user to the joins database
-                cursor.execute('INSERT INTO joins VALUES (%s,%s)', [
-                    activity_id, request.session.get("email")
-                ])
-
-            return HttpResponseRedirect(reverse('admin_activity'))
-
-        context = {'categories': categories}
+                try:
+                    cursor.execute('CALL create_new_activity(%s,%s,%s,%s,%s,%s,%s)',[
+                        user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['end_date_time'],request.POST['venue'], request.POST['capacity']])
+                except Exception as e:
+                    message = str(e)
+        
+        context['message'] = message
+        context['categories'] = categories
         return render(request, 'admin_activity_create.html', context)
 
     return HttpResponseRedirect(reverse('admin_activity'))
@@ -721,6 +688,7 @@ def admin_activity_edit(request, activity_id):
     user_email = request.session.get('email', False)
     user_type = request.session.get('type')
     context = {}
+    message = ''
 
     if user_type == 'administrator' and user_email is not False:
 
@@ -732,18 +700,17 @@ def admin_activity_edit(request, activity_id):
         if request.method == 'POST':
 
             with connection.cursor() as cursor:
+                try:
+                    cursor.execute('UPDATE activity SET category = %s, activity_name = %s, start_date_time = %s,end_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
+                        request.POST['category'], request.POST['activity_name'], request.POST[
+                            'start_date_time'], request.POST['end_date_time'], request.POST['venue'], request.POST['capacity'], activity_id
+                    ])
+                    cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
+                    this_activity = cursor.fetchone()
+                except Exception as e:
+                    message = str(e)
 
-                cursor.execute('UPDATE activity SET category = %s, activity_name = %s, start_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
-                    request.POST['category'], request.POST['activity_name'], request.POST[
-                        'start_date_time'], request.POST['venue'], request.POST['capacity'], activity_id
-                ])
-                cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
-                this_activity = cursor.fetchone()
-
-            return HttpResponseRedirect(reverse('admin_activity'))
-
-        # else:
-            # return render(request,'admin_activity_edit.html', context)
+        context['message']= message
         context['this_activity'] = this_activity
         return render(request,'admin_activity_edit.html',context)
 
@@ -923,6 +890,14 @@ def frontpage(request):
 
 # View functions for login functions
 def login_view(request):
+    '''
+    login_view view function responsible for the login page.
+    Takes in the request and returns the rendering of the login page.
+    Argument:
+        request: HTTP Request
+    Return:
+        render function: renders the login page (path: /login)
+    '''
     # Check if user is already signed in
     if request.session.get("email", False) is not False:
         return HttpResponseRedirect(reverse("index"))
@@ -978,12 +953,27 @@ def login_view(request):
 
 
 def logout_view(request):
+    '''
+    logout_view view function responsible for logging out the user from the website.
+    Argument:
+        request: HTTP Request
+    Return:
+        HTTP Response Redirect to the frontpage (path: /category_popularity)
+    '''
     if "email" in request.session:
         del request.session["email"]
     return HttpResponseRedirect(reverse("frontpage"))
 
 
 def register(request):
+    '''
+    register view function responsible for the registration page.
+    Takes in the request and returns the rendering of the register page.
+    Argument:
+        request: HTTP Request
+    Return: 
+        render function: renders the registration page (path: /register)
+    '''
     context = {}
     status = ''
 
@@ -1010,7 +1000,7 @@ def register(request):
     return render(request, "register.html", context)
 
 
-# update later
+# TODO: DELETE THIS PORTION AND THE CORRESPONDING HTML PAGES AND LINKS
 def forget_password(request):
     if request.method == "POST":
         with connection.cursor() as cursor:
