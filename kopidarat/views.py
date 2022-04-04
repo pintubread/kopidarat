@@ -422,8 +422,6 @@ def create_report(request):
         return HttpResponseRedirect(reverse("index"))
 
 # View functions for the admin side of the website
-
-
 def admin_index(request):
     '''
     index_admin view function that is responsible for the rendering of the administrator's page.
@@ -618,6 +616,8 @@ def admin_user_delete(request, delete_email):
                 delete_type = cursor.fetchone()
 
                 # check which type, to correctly initiate the ON DELETE CASCADE
+                cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
+
                 # also check so that the admin does not delete him/herself
                 if delete_type == 'administrator' and user_email != delete_email:
                     cursor.execute(
@@ -889,16 +889,14 @@ def admin_report_delete(request, submitter_email, timestamp):
 
     return HttpResponseRedirect(reverse('admin_index'))
 
-# View function for category popularity list
-
-
+# View function for the main page
 def frontpage(request):
     '''
     frontpage view function is a friendly front page for the website
     that introduces a little of what KopiDarat is about and displays 
     general stats of the website to get new visitors interested,
     from the number of activities, number of registered users,
-    and the list of activity categories with its respective popularity
+    and the list of activity categories with its respective popularity.
     Argument:
         request: HTTP request
     Return:

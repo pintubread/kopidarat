@@ -1,16 +1,9 @@
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
-  body {
-    color: black;
-    text-align: center;
-    background-color: #FF8415;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-</style>
-
+{% load static %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'user_activity.css' %}"
+/>
 <html>
   <head>
     <title>Your Activities</title>
@@ -23,8 +16,7 @@
     {% endif %}
 
     <a href="/"> Back to Main Page </a>
-    
-    
+
     <h2>Activities that you have created</h2>
     <table>
       <thead>
@@ -62,7 +54,6 @@
     <h2>Upcoming Activities that you have created</h2>
     <br />
     <table border="1">
-
       <thead>
         <th>Activity Name</th>
         <th>Inviter</th>
@@ -103,13 +94,9 @@
       {% endfor %}
     </table>
 
-    
-
-
     <h2>Your Upcoming Activities</h2>
-    
-    <table border="1">
 
+    <table border="1">
       <thead>
         <th>Activity Name</th>
         <th>Inviter</th>
@@ -124,7 +111,7 @@
         <td>{{ activity.1 }}</td>
         <td>{{ activity.2 }}</td>
         <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>      
+        <td>{{ activity.5 }}</td>
         <td>
           <a
             class="button"
@@ -137,8 +124,6 @@
       </tr>
       {% endfor %}
     </table>
-
-    
 
     <h2>Past Activities that you have joined</h2>
     <br />
@@ -166,7 +151,7 @@
           >
             Review
           </a>
-        </td>        
+        </td>
       </tr>
       {% endfor %}
     </table>
@@ -174,7 +159,7 @@
     <br /><br />
 
     <h2>Your Reviews</h2>
-    
+
     <table>
       <thead>
         <th>Activity ID</th>
@@ -191,7 +176,7 @@
     </table>
 
     <h2>Your Reports</h2>
-    
+
     <table>
       <thead>
         <th>Timestamp</th>
