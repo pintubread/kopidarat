@@ -3,6 +3,7 @@
 <h1>Welcome to KopiDarat!</h1>
 <h2>Wanna play golf but cannot find friends to play with you? Wanna try out traditional Japanese tea ceremony but cannot find anyone else who seems interested?
 </h2>
+{% load static %}
 <style> 
     @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
     body {
@@ -20,33 +21,25 @@
         font-family: 'futura';
         color: black;
     }
-    #box-1 {
-        background: white;
-        margin : 50px;
-    }
-    #box-2 {
-        position: sticky;
-        top: 50px;
-        width: 500px;
-        height: 500px;
-        background-image: url("kopidarat/web design/demonic loaf.jpeg");
-    }
     .container {
-        max-width: 960px;
+        max-width: 500px;
         margin: 30px auto;
     }
     a:hover {
-        color: #f4d1ff;
+        color: #17706c;
         text-decoration: underline;
     }
+    .dark {
+        background-color: #FF8415;    }
+
 </style>
 <br></br>
     <h2>
-
     <div id="box-1" class="box">
         It's time you join (or organise!) a kopi darat -- a casual meetup among random people interested in taking part in the same activities as you.
     </div>
-
+    <div class="curve"> </div>
+    <div class="dark"> </div>
     </h2>
     <br></br>
     <h2>

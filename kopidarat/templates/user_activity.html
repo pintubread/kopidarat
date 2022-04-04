@@ -1,20 +1,32 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
+  body {
+    color: black;
+    text-align: center;
+    background-color: #FF8415;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+</style>
+
 <html>
   <head>
     <title>Your Activities</title>
   </head>
   <body>
     <h1>Hello {{user_fullname}}!</h1>
-    <br />
-    <br />
+
     {% if message %}
     <div>{{ message }}</div>
     {% endif %}
     <a href="/"> Back to Main Page </a>
-    <br />
-    <br />
+    
+    
     <h2>Activities that you have created</h2>
-    <br />
-    <table border="1">
+    
+    <table>
       <thead>
         <th>Activity ID</th>
         <th>Activity Name</th>
@@ -57,11 +69,11 @@
       {% endfor %}
     </table>
 
-    <br /><br />
+    
 
     <h2>Activities that you have joined</h2>
-    <br />
-    <table border="1">
+    
+    <table>
       <thead>
         <th>Activity ID</th>
         <th>Activity Name</th>
@@ -92,11 +104,11 @@
       {% endfor %}
     </table>
 
-    <br /><br />
+    
 
     <h2>Your Reviews</h2>
-    <br />
-    <table border="1">
+    
+    <table>
       <thead>
         <th>Activity ID</th>
         <th>Timestamp</th>
@@ -112,8 +124,8 @@
     </table>
 
     <h2>Your Reports</h2>
-    <br />
-    <table border="1">
+    
+    <table>
       <thead>
         <th>Timestamp</th>
         <th>User Reported</th>
