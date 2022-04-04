@@ -26,7 +26,6 @@ def index(request,*kwargs):
     '''
     # Checking if user is logged in
     user_email = request.session.get("email", False)
-    message=''
     if kwargs:
         message=''.join(kwargs)
     if user_email is not False:
@@ -101,7 +100,7 @@ def index(request,*kwargs):
             #'categories': categories,
             #'message':message
         #}
-        context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories}
+        context = {'records' : activities,'full_name':request.session.get("full_name"),'categories':categories,'message':message}
         if request.session.get("message",False):
             context["message"]=request.session["message"]
             del request.session["message"]
