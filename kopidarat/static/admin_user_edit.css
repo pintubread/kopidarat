@@ -3,6 +3,7 @@ body {
   color: black;
   text-align: center;
   background-color: #ff8415;
+  font-family: "Arial Black";
 }
 .container {
   margin: 30px auto;
@@ -14,18 +15,19 @@ h2 {
   font-size: 70px;
   font-family: "Sora";
 }
+h4 {
+  font-family: "Arial";
+  font-size: 15px;
+  color: #666;
+  text-align: left;
+}
 
 .form-wrap {
   background: #fff;
   padding: 15px 25px;
   border-radius: 7px;
 }
-.form-wrap .form-group ::placeholder {
-  display: block;
-  color: #666;
-  padding-left: 10px;
-  font-family: "futura";
-}
+
 .form-wrap .form-group input {
   width: 100%;
   padding: 10px;
@@ -37,7 +39,7 @@ h2 {
   margin-bottom: 5px;
 }
 .form-wrap input[type="submit"] {
-  font-family: "futura";
+  font-family: "Arial";
   display: block;
   width: 100%;
   background: black;

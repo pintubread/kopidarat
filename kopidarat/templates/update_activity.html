@@ -15,7 +15,8 @@
         <a href="/user_activity">Back to your activities</a>
 
         <form method="POST">
-          {% csrf_token %} Activity Name
+          {% csrf_token %}
+          <h4>Activity Name</h4>
           <div class="form-group">
             <input
               autofocus
@@ -24,11 +25,11 @@
               value="{{this_activity.3}}"
             />
           </div>
-          Category
+          <h4>Category</h4>
           <div class="form-group">
             <input type="text" name="category" value="{{this_activity.2}}" />
           </div>
-          Start Date Time
+          <h4>Start Date Time</h4>
           <div class="form-group">
             <input
               type="datetime-local"
@@ -36,7 +37,7 @@
               value="{{this_activity.4}}"
             />
           </div>
-          End Date Time
+          <h4>End Date Time</h4>
           <div class="form-group">
             <input
               type="datetime-local"
@@ -44,11 +45,11 @@
               value="{{this_activity.5}}"
             />
           </div>
-          Venue
+          <h4>Venue</h4>
           <div class="form-group">
             <input type="text" name="venue" value="{{this_activity.6}}" />
           </div>
-          Capacity
+          <h4>Capacity</h4>
           <div class="form-group">
             <input
               class="form-control"

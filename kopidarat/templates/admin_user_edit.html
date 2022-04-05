@@ -15,7 +15,8 @@
         <a href="/admin_user">Back to the list of users</a>
 
         <form method="POST">
-          {% csrf_token %} Full Name
+          {% csrf_token %}
+          <h4>Full Name</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -25,7 +26,7 @@
               value="{{obj.0}}"
             />
           </div>
-          Username
+          <h4>Username</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -35,7 +36,7 @@
               value="{{obj.1}}"
             />
           </div>
-          Phone Number
+          <h4>Phone Number</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -44,7 +45,7 @@
               value="{{obj.3}}"
             />
           </div>
-          Password
+          <h4>Password</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -53,7 +54,9 @@
               value="{{obj.4}}"
             />
           </div>
-          User Type
+
+          <h4>Type</h4>
+
           <div class="form-group">
             <input
               class="form-control"

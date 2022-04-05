@@ -18,17 +18,17 @@
         <div>{{ message }}</div>
         {% endif %}
         <form action="{% url 'create_activity' %}" method="post">
-          {% csrf_token %} Activity Name
+          {% csrf_token %}
+          <h4>Activity Name</h4>
           <div class="form-group">
             <input
               class="form-control"
               autofocus
               type="text"
               name="activity_name"
-              placeholder="Activity Name"
             />
           </div>
-          Category
+          <h4>Category</h4>
           <div class="form-group">
             <div class="form-group">
               <select id="category" name="category">
@@ -38,7 +38,7 @@
               </select>
             </div>
           </div>
-          Start Date and Time
+          <h4>Start Date and Time</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -46,7 +46,7 @@
               name="start_date_time"
             />
           </div>
-          End Date and Time
+          <h4>End Date and Time</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -54,16 +54,11 @@
               name="end_date_time"
             />
           </div>
-          Venue
+          <h4>Venue</h4>
           <div class="form-group">
-            <input
-              class="form-control"
-              type="text"
-              name="venue"
-              placeholder="Venue"
-            />
+            <input class="form-control" type="text" name="venue" />
           </div>
-          Capacity
+          <h4>Capacity (between 2 to 10)</h4>
           <div class="form-group">
             <input
               class="form-control"
@@ -71,7 +66,6 @@
               name="capacity"
               min="2"
               max="10"
-              placeholder="Capacity (between 2 to 10)"
             />
           </div>
           <input

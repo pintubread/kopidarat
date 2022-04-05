@@ -3,6 +3,7 @@ body {
   color: black;
   text-align: center;
   background-color: #ff8415;
+  font-family: "Arial";
 }
 .container {
   margin: 30px auto;
@@ -16,7 +17,7 @@ h1 {
 }
 h3 {
   font-size: 20px;
-  font-family: "futura";
+  font-family: "Arial Black";
 }
 .form-wrap {
   background: #fff;
@@ -27,7 +28,7 @@ h3 {
   display: block;
   color: #666;
   padding-left: 10px;
-  font-family: "futura";
+  font-family: "Arial";
 }
 
 .form-wrap input {
@@ -42,7 +43,7 @@ h3 {
 }
 
 .form-wrap input[type="submit"] {
-  font-family: "futura";
+  font-family: "Arial Black";
   display: block;
   width: 100%;
   background: black;

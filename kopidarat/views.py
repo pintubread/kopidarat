@@ -232,6 +232,7 @@ def user_activity(request):
             ])
             reports_list = cursor.fetchall()
 
+
         context['user_fullname'] = request.session.get('full_name')
         context['inviter_past_list'] = past_inviter_list
         context['inviter_future_list'] = inviter_list
@@ -375,7 +376,6 @@ def create_review(request,activity_id):
 
         with connection.cursor() as cursor:
             cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
-            
             activity_details = cursor.fetchone()
             context["activity_details"]=activity_details
 
@@ -390,7 +390,7 @@ def create_review(request,activity_id):
                     message=str(e)
                     
         context["message"]=message
-        return render(request, 'review.html', {"message": message})
+        return render(request, 'review.html', context)
     else:
         return HttpResponseRedirect(reverse("index"))
 
