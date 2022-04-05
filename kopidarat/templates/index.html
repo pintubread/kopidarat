@@ -103,7 +103,8 @@
             Category: {{ activity.2 }}<br/>
             <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a>
           </td>
-
+        </tr>
+        {% endfor %}
 
     <h2> Available Activities </h2>
     <form action="{% url 'index' %}" method="post">
