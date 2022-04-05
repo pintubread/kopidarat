@@ -79,8 +79,23 @@ th {
   font-size: 20px;
 }
 
+button {
+  display: block;
+  width: 50%;
+  background: black;
+  color: white;
+  padding: 10px;
+  padding-left: 2px;
+  padding-right: 2px;
+  border-radius: 7px;
+  margin-top: 20px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-family: "Arial Black";
+}
+
 a {
-  color: #ff8415;
+  color: white;
   font-size: 15px;
 }
 
@@ -97,4 +112,18 @@ a {
   margin-right: auto;
   margin-top: 30px;
   margin-bottom: 30px;
+}
+
+.tableoverflow {
+  border-collapse: collapse;
+}
+
+.overflow_th, .overflow_td {
+  padding: 20px 60px;
+}
+
+.table-wrap {
+height: 1000px;
+overflow-y: scroll;
+display: inline-block;
 }

@@ -87,7 +87,7 @@ button {
   font-family: "Arial Black";
 }
 a {
-  color: #1d1209;
+  color: white;
   text-decoration: none;
 }
 .wrapper {
@@ -139,9 +139,20 @@ option {
   margin-right: 4px;
 }
 
-a {
-  color: black;
-}
 .clearselection a {
   color: #17706c;
+}
+
+.tableoverflow {
+  border-collapse: collapse;
+}
+
+.overflow_th, .overflow_td {
+  padding: 20px 60px;
+}
+
+.table-wrap {
+height: 1000px;
+overflow-y: scroll;
+display: inline-block;
 }

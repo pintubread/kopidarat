@@ -15,7 +15,7 @@
 
         <form method="post">
           {% csrf_token %}
-          You are about to report <b>{{this_participant.1}}</b>
+          You are reporting <b>{{this_participant.1}}</b>
           <br/><br>
           <div class="form-group">
             <input
@@ -29,9 +29,9 @@
           <div class="form-group">
             Severity
             <select id="severity" name="severity">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </div>
           <input class="btn btn-primary" type="submit" value="Submit Report" />

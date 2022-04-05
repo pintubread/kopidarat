@@ -1,224 +1,173 @@
 {% load static %}
-<link
-  rel="stylesheet"
-  type="text/css"
-  href="{% static 'user_activity.css' %}"
-/>
+<link rel="stylesheet" type="text/css" href="{% static 'user_activity.css' %}" />
 <html>
-  <head>
-    <title>Your Activities</title>
-  </head>
-  <body>
-    <h1>Hello {{user_fullname}}!</h1>
-    <br />
-    <br />
-    {% if message %}
-    <div>{{ message }}</div>
-    {% endif %}
 
-    <a href="/"> Back to Main Page </a>
+<head>
+  <title>Your Activities</title>
+</head>
 
-    <h2>Upcoming Activities that you created</h2>
-    <br />
-    <table border="1">
-      <thead>
-        <th>Activity Name</th>
-        <th>Inviter</th>
-        <th>Category</th>
-        <th>Start Date Time</th>
-        <th>Venue</th>
-        <th>Joined</th>
-        <th>Capacity</th>
-        <th>See Participants</th>
-        <th>Edit Activity</th>
-      </thead>
+<body>
+  <h1>Hello {{user_fullname}}!</h1>
+  <br />
+  <br />
+  {% if message %}
+  <div>{{ message }}</div>
+  {% endif %}
+
+  <button><a href="/"> Back to Main Page </a></button>
+
+  <h2>Upcoming Activities that you created</h2>
+  
+  <div class="table-wrap">
+    <table class="tableoverflow">
       {% for activity in inviter_future_list %}
       <tr>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.1 }}</td>
-        <td>{{ activity.2 }}</td>
-        <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>
-        <td>{{ activity.6 }}</td>
-        <td>{{ activity.7 }}</td>
-        <td>{{ activity.8 }}</td>
-        <td>
-          <a
-            class="button"
-            href="participants/{{ activity.0 }}"
-            class="text-decoration-none"
-          >
-            Participants List
-          </a>
-        </td>
-        <td>
-          <a
-            class="button"
-            href="{% url 'update_activity' activity.0 %}"
-            class="text-decoration-none"
-          >
-            Edit
-          </a>
+        <td class="overflow_td">
+          <h2>{{ activity.3 }}</h2>
+          <h3>{{ activity.6 }}</h3>
+          <h4>{{ activity.4 }} - {{ activity.5 }}</h4>
+          Organized by {{ activity.1 }}<br />
+          Enrolment: {{ activity.7 }}/{{ activity.8 }}<br/>
+          <br>
+          Category: {{ activity.2 }}
+          <button>
+            <a class="button" href="participants/{{ activity.0 }}" class="text-decoration-none">
+              Participants List
+            </a>
+          </button>
+          <button>
+            <a class="button" href="{% url 'update_activity' activity.0 %}" class="text-decoration-none">
+              Edit
+            </a>
+          </button>
         </td>
       </tr>
       {% endfor %}
     </table>
+  </div>
 
-    <h2>Your Upcoming Activities</h2>
+  <h2>Your Upcoming Activities</h2>
 
-
-    <table border="1">
-      <thead>
-        <th>Activity Name</th>
-        <th>Inviter</th>
-        <th>Category</th>
-        <th>Start Date Time</th>
-        <th>Venue</th>
-        <th>See Participants</th>
-        <th>Cancel Joining</th>
-      </thead>
+  <div class="table-wrap">
+    <table class="tableoverflow">
       {% for activity in joined_future_activities_list %}
       <tr>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.7 }}</td>
-        <td>{{ activity.2 }}</td>
-        <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>
-        <td>{{ activity.6 }}</td>
-        <td>
-          <a
-            class="button"
-            href="participants/{{ activity.0 }}"
-            class="text-decoration-none"
-          >
-            Participants List
-          </a>
-        </td>      
-        <td>
-          <a
-            class="button"
-            href="{% url 'delete_activity' activity.0 %}"
-            class="text-decoration-none"
-          >
-            Delete
-          </a>
+        <td class="overflow_td">
+          <h2>{{ activity.3 }}</h2>
+          <h3>{{ activity.6 }}</h3>
+          <h4>{{ activity.4 }} - {{ activity.5 }}</h4>
+          Organized by {{ activity.1 }}<br />
+          <br>
+          <br>
+          Category: {{ activity.2 }}
+          <button><a class="button" href="participants/{{ activity.0 }}" class="text-decoration-none">
+              Participants List
+            </a></button>
+          <button><a class="button" href="{% url 'delete_activity' activity.0 %}" class="text-decoration-none">
+              Delete
+            </a></button>
         </td>
       </tr>
       {% endfor %}
     </table>
+  </div>
 
-    <h2>Past activities that you have created</h2>
-    <table border="1">
-      <thead>
-        <th>Activity Name</th>
-        <th>Inviter</th>
-        <th>Category</th>
-        <th>Start Date Time</th>
-        <th>Venue</th>
-        <th>Capacity</th>
-        <th>See Participants</th>
-      </thead>
-      {% for activity in inviter_past_list %}
-      <tr>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.8 }}</td>
-        <td>{{ activity.2 }}</td>
-        <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>
-        <td>{{ activity.6 }}</td>
-        <td>{{ activity.7 }}</td>
-        <td>
-          <a
-            class="button"
-            href="{% url 'participants' activity.0 %}"
-            class="text-decoration-none"
-          >
-            Participants List
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-
-    <br /><br />
-
-    <h2>Past Activities that you have joined</h2>
-    <br />
-    <table border="1">
-      <thead>
-        <th>Activity Name</th>
-        <th>Inviter</th>
-        <th>Category</th>
-        <th>Start Date Time</th>
-        <th>Venue</th>
-        <th>See Participants</th>
-        <th>Review</th>
-      </thead>
-      {% for activity in joined_activities_list %}
-      <tr>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.1 }}</td>
-        <td>{{ activity.2 }}</td>
-        <td>{{ activity.4 }}</td>
-        <td>{{ activity.5 }}</td>
-        <td>
-          <a
-            class="button"
-            href="participants/{{ activity.0 }}"
-            class="text-decoration-none"
-          >
-            Participants List
-          </a>
-        </td>    
-        <td>
-          <a
-            class="button"
-            href="{% url 'review' activity.0 %}"
-            class="text-decoration-none"
-          >
-            Review
-          </a>
-        </td>        
-      </tr>
-      {% endfor %}
-    </table>
-
-    <br /><br />
-
-    <h2>Your Reviews</h2>
-    <br />
-    <table border="1">
-      <thead>
-        <th>Activity ID</th>
-        <th>Timestamp</th>
-        <th>Comment</th>
-      </thead>
-      {% for review in reviews_list %}
-      <tr>
-        <td>{{ review.0 }}</td>
-        <td>{{ review.1 }}</td>
-        <td>{{ review.2 }}</td>
-      </tr>
-      {% endfor %}
-    </table>
-
-    <h2>Your Reports</h2>
-    <br />
-    <table border="1">
-      <thead>
-        <th>Timestamp</th>
-        <th>User Reported</th>
-        <th>Comment</th>
-        <th>Severity</th>
-      </thead>
-      {% for report in reports_list %}
-      <tr>
-        <td>{{ report.0 }}</td>
-        <td>{{ report.1 }}</td>
-        <td>{{ report.2 }}</td>
-        <td>{{ report.3 }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+  <h2>Past activities that you have created</h2>
+  <div class="table-wrap">
+  <table class="tableoverflow">
+    {% for activity in inviter_past_list %}
+    <tr>
+      <td class="overflow_td">
+        <h2>{{ activity.3 }}</h2>
+        <h3>{{ activity.6 }}</h3>
+        <h4>{{ activity.4 }} - {{ activity.5 }}</h4>
+        Organized by {{ activity.8 }}<br />
+        <br/><br>
+        Category: {{ activity.2 }}
+        <table>
+          <thead>
+            <th><button><a class="button" href="{% url 'participants' activity.0 %}" class="text-decoration-none">
+              Participants List
+            </a></button></th>
+          </thead>
+        </table>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
   </body>
+</div>
+
+  <br /><br />
+
+  <h2>Past Activities that you have joined</h2>
+  <br />
+  <div class="table-wrap">
+    <table class="tableoverflow">
+      {% for activity in joined_past_activities_list %}
+      <tr>
+        <td class="overflow_td">
+          <h2>{{ activity.4 }}</h2>
+          <h3>{{ activity.7 }}</h3>
+          <h4>{{ activity.5 }} - {{ activity.6 }}</h4>
+          Organized by {{ activity.2 }}<br />
+          <br/><br>
+          Category: {{ activity.3 }}
+          <button>
+            <a class="button" href="participants/{{ activity.0 }}" class="text-decoration-none">
+              Participants List
+            </a>
+          </button>
+          <button>
+            <a class="button" href="{% url 'review' activity.0 %}" class="text-decoration-none">
+              Review
+            </a>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <br /><br />
+
+  <h2>Your Reviews</h2>
+  <br />
+  <table border="1">
+    <thead>
+      <th>Activity ID</th>
+      <th>Timestamp</th>
+      <th>Rating</th>
+      <th>Comment</th>
+    </thead>
+    {% for review in reviews_list %}
+    <tr>
+      <td>{{ review.0 }}</td>
+      <td>{{ review.1 }}</td>
+      <td>{{ review.2 }}</td>
+      <td>{{ review.3 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Your Reports</h2>
+  <br />
+  <table border="1">
+    <thead>
+      <th>Timestamp</th>
+      <th>User Reported</th>
+      <th>Comment</th>
+      <th>Severity</th>
+    </thead>
+    {% for report in reports_list %}
+    <tr>
+      <td>{{ report.0 }}</td>
+      <td>{{ report.1 }}</td>
+      <td>{{ report.2 }}</td>
+      <td>{{ report.3 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+
 </html>

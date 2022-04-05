@@ -126,6 +126,7 @@ def create_activity(request):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
             context["categories"] = categories
+
         if request.method == 'POST':
             with connection.cursor() as cursor:
                 try:
@@ -137,8 +138,6 @@ def create_activity(request):
         context['message'] = message
         return render(request, 'create_activity.html', context)
     return HttpResponseRedirect(reverse("index"))
-
-
 
 def create_review(request,activity_id):
     '''
@@ -157,22 +156,21 @@ def create_review(request,activity_id):
 
         with connection.cursor() as cursor:
             cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
-            
             activity_details = cursor.fetchone()
             context["activity_details"]=activity_details
 
             if request.method == 'POST':
                 try:
-                    cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
-                                request.POST['activity_id'], datetime.datetime.now(
-                                ), user_email,
+                    cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s,%s)', [
+                                activity_id, datetime.datetime.now(
+                                ), user_email,request.POST['rating'],
                                 request.POST['comment']
                             ])
                 except Exception as e:
                     message=str(e)
                     
         context["message"]=message
-        return render(request, 'review.html', {"message": message})
+        return render(request, 'review.html', context)
     else:
         return HttpResponseRedirect(reverse("index"))
 
@@ -210,8 +208,7 @@ def create_report(request, username):
         context['this_participant'] = this_participant
         return render(request, 'report.html', context)
 
-    return HttpResponseRedirect(reverse("participants.html"))
-
+    return HttpResponseRedirect(reverse("user_activity"))
 
 def join(request, activity_id):
     '''
@@ -281,24 +278,22 @@ def user_activity(request):
             upcoming_activities_list = cursor.fetchall()
 
             # Get the table of past activities created by other user where the user has joined
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue,a.end_date_time FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT a.activity_id, a.inviter, u.full_name, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             joined_activities_list = cursor.fetchall()
 
-
             # Get table of reviews that user has created
-            cursor.execute('SELECT a.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT r.timestamp, a.activity_name, r.rating, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             reviews_list = cursor.fetchall()
 
-            # Get table of reviews that user has created
+            # Get table of reports that user has created
             cursor.execute('SELECT r.timestamp, r.report_user, r.comment, r.severity FROM report r, users u WHERE r.report_user = u.email AND r.submitter = %s ORDER BY r.timestamp ASC', [
                 user_email
             ])
             reports_list = cursor.fetchall()
-
 
         context['user_fullname'] = request.session.get('full_name')
         context['inviter_past_list'] = past_inviter_list
@@ -393,6 +388,7 @@ def participants(request, activity_id):
     # context dicitonary to store the values
     context = {}
     user_email = request.session.get("email", False)
+    has_passed = False
 
     if user_email is not False:
 
@@ -405,14 +401,18 @@ def participants(request, activity_id):
 
         if user is not None:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
+                cursor.execute("SELECT u.full_name, u.username, u.email, u.phone_number, (CASE WHEN u.email=a.inviter THEN 'Inviter' ELSE 'Participant' END) AS remarks FROM users u, joins j, activity a WHERE j.activity_id = a.activity_id AND j.activity_id=%s AND u.email=j.participant AND u.email<>%s",
                             [int(activity_id), user_email])
                 participants = cursor.fetchall()
 
                 cursor.execute(
-                    'SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s', [activity_id])
-                activity_name, inviter = cursor.fetchone()
+                    'SELECT a.activity_name,a.inviter,a.end_date_time FROM activity a WHERE a.activity_id=%s', [activity_id])
+                activity_name, inviter, end_time = cursor.fetchone()
 
+                if end_time < datetime.datetime.now():
+                    has_passed = True
+
+            context["has_passed"] = has_passed
             context["participants"] = participants
             context["activity_name"] = activity_name
             context["inviter"] = inviter
@@ -447,14 +447,6 @@ def admin_index(request):
                 'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join DESC ,u.username ASC LIMIT 5')
             list_of_active_users = cursor.fetchall()
 
-            # Select the top 5 most inactive users (identified by usernames) based on the number of activities joined
-            #cursor.execute(
-                #'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
-           #cursor.execute(
-                #'SELECT u.username FROM users u WHERE u.email NOT IN (SELECT j.participant FROM joins j)'
-            #)
-            #list_of_inactive_users = cursor.fetchall()
-
             # Select the top 5 activities with the most reviews, by counting the number of reviews
             cursor.execute('SELECT a.activity_id,a.activity_name, COUNT(r.comment) AS total_reviews FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY total_reviews DESC, a.activity_id ASC LIMIT 5')
             list_of_reviewed_activities = cursor.fetchall()
@@ -469,7 +461,6 @@ def admin_index(request):
 
         context = {
             'list_of_active_users': list_of_active_users,
-            #'list_of_inactive_users': list_of_inactive_users,
             'list_of_reviewed_activities': list_of_reviewed_activities,
             'list_of_user_reports': list_of_user_reports,
             'list_of_activities_by_admin': list_of_activities_by_admin
