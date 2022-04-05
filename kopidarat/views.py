@@ -33,8 +33,8 @@ def index(request,*kwargs):
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
-            
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM joins j WHERE j.activity_id=a.activity_id) AS joined FROM activity a1 WHERE a1.activity_id=a.activity_id) FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
+
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # Get recommended activities:
