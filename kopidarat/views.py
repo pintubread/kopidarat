@@ -208,7 +208,7 @@ def user_activity(request):
             inviter_list = cursor.fetchall()
 
             # Get the table of upcoming activities created by other user where the user has signed up for
-            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() <= a.start_date_time ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() <= a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             upcoming_activities_list = cursor.fetchall()
@@ -338,13 +338,14 @@ def participants(request, activity_id):
             user = cursor.fetchone()
 
         if user is not None:
-            cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
-                           [int(activity_id), user_email])
-            participants = cursor.fetchall()
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT u.full_name, u.email, u.phone_number FROM users u, joins j WHERE j.activity_id=%s AND u.email=j.participant AND u.email<>%s',
+                            [int(activity_id), user_email])
+                participants = cursor.fetchall()
 
-            cursor.execute(
-                'SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s', [activity_id])
-            activity_name, inviter = cursor.fetchone()
+                cursor.execute(
+                    'SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s', [activity_id])
+                activity_name, inviter = cursor.fetchone()
 
             context["participants"] = participants
             context["activity_name"] = activity_name
