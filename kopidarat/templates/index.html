@@ -37,6 +37,7 @@
           <th> Inviter </th>
           <th> Category </th>
           <th> Start Date Time </th>
+          <th> End Date Time </th>
           <th> Venue </th>
           <th> Joined </th>
           <th> Capacity </th>
@@ -51,6 +52,7 @@
         <td> {{ activity.5 }}</td>
         <td> {{ activity.6 }}</td>
         <td> {{ activity.7 }}</td>
+        <td> {{ activity.8 }}</td>
         <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
       </tr>
       {% endfor %}
@@ -83,9 +85,10 @@
           <th> Inviter </th>
           <th> Category </th>
           <th> Start Date Time </th>
+          <th> End Date Time </th>
           <th> Venue </th>
           <th> Capacity </th>
-          <th> Joined By</th>
+          <th> Joined</th>
           <th> Join </th>
       </thead>
       {% for activity in records %}
@@ -97,6 +100,7 @@
         <td> {{ activity.5 }}</td>
         <td> {{ activity.6 }}</td>
         <td> {{ activity.7 }}</td>
+        <td> {{ activity.8 }}</td>
         <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
       </tr>
       {% endfor %}
