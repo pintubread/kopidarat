@@ -38,8 +38,8 @@ def index(request,*kwargs):
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         # Get recommended activities:
-        # All upcoming activities whose categories have been joined by the user
-        recommendations_sql=" AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
+        # All upcoming activities in the next 7 days whose categories have been joined by the user
+        recommendations_sql=" AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
         with connection.cursor() as cursor:
             cursor.execute(all_activities_sql+recommendations_sql+ordering_sql)
             recommended_activities = cursor.fetchall()
@@ -167,7 +167,7 @@ def user_activity(request):
         render function: renders the user_activity page
     '''
     user_email = request.session.get("email", False)
-
+    
     if user_email is not False:
 
         # need a dictionary to store some of the information that is needed to be passed to the html pages
@@ -182,7 +182,7 @@ def user_activity(request):
             past_inviter_list = cursor.fetchall()
 
             # Get the table of upcoming activities where the current user is the inviter
-            cursor.execute('SELECT * FROM activity a, users u WHERE a.inviter = u.email AND a.inviter = %s AND a.start_date_time > NOW() ORDER BY a.start_date_time ASC', [
+            cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND a.inviter = %s AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND a.start_date_time > NOW() ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             inviter_list = cursor.fetchall()
@@ -213,10 +213,10 @@ def user_activity(request):
             reports_list = cursor.fetchall()
 
         context['user_fullname'] = request.session.get('full_name')
-        context['past_inviter_list'] = past_inviter_list
-        context['inviter_list'] = inviter_list
-        context['upcoming_activities_list'] = upcoming_activities_list
-        context['joined_activities_list'] = joined_activities_list
+        context['inviter_past_list'] = past_inviter_list
+        context['inviter_future_list'] = inviter_list
+        context['joined_future_activities_list'] = upcoming_activities_list
+        context['joined_past_activities_list'] = joined_activities_list
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
 

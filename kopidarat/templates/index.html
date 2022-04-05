@@ -5,9 +5,21 @@
     <title> Welcome to KopiDarat! </title>
   </head>
   <body>
+  <style>
+    .recommendation {
+        border-collapse: collapse;
+    }
 
-    <h1>Hello {{full_name}}!</h1>  
+    .rec_th, .rec_td {
+        padding: 20px 30px;
+    }
 
+    .table-wrap {
+      height: 300px;
+      overflow-y: scroll;
+      display: inline-block;
+    }
+  </style>
     {% if message %}
     <div id="overlay"></div>
     <div class="popup">
@@ -20,43 +32,56 @@
     </div>
     {% endif %}
     <br/><br>
-    <a href="{% url 'create_activity' %}"> New Activity </a>
-    <br/><br>
-    <a href="{% url 'report' %}"> New Report </a>
-    <br/><br>
-    <a href="{% url 'user_activity' %}"> Your Activities </a>
-    <br/><br>
-    <a href="{% url 'logout' %}"> Logout </a>
-    <br/><br>
+    <table border="1">
+      <thead>
+        <th><a href="{% url 'create_activity' %}"> New Activity </a></th>
+        <th><a href="{% url 'report' %}"> New Report </a></th>
+        <th><a href="{% url 'user_activity' %}"> Your Activities </a></th>
+        <th><a href="{% url 'logout' %}"> Logout </a></th>
+      </thead>
+    </table>
     
     <h2> Recommended For You</h2>
     <br/>
-    <table border=1>
-      <thead>
-          <th> Activity Name </th>
-          <th> Inviter </th>
-          <th> Category </th>
-          <th> Start Date Time </th>
-          <th> End Date Time </th>
-          <th> Venue </th>
-          <th> Joined </th>
-          <th> Capacity </th>
-          <th> Join </th>
-      </thead>
-      {% for activity in recommended_activities %}
-      <tr>
-        <td> {{ activity.3 }}</td>
-        <td> {{ activity.1 }}</td>
-        <td> {{ activity.2 }}</td>
-        <td> {{ activity.4 }}</td>
-        <td> {{ activity.5 }}</td>
-        <td> {{ activity.6 }}</td>
-        <td> {{ activity.7 }}</td>
-        <td> {{ activity.8 }}</td>
-        <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
-      </tr>
-      {% endfor %}
-    </table>
+    <div class = "table-wrap">
+      <table class="recommendation">
+        <!--
+        <thead>
+            <th> Activity Name </th>
+            <th> Inviter </th>
+            <th> Category </th>
+            <th> Start Date Time </th>
+            <th> Venue </th>
+            <th> Joined </th>
+            <th> Capacity </th>
+            <th> Join </th>
+        </thead>
+      -->
+        {% for activity in recommended_activities %}
+        <tr>
+          <td class="rec_td"> 
+            <h2>{{ activity.3 }}</h2>
+            <h3>{{ activity.5 }}</h3>
+            {{ activity.4 }}<br/>
+            {{ activity.1 }}<br/>
+            {{ activity.6 }}/
+            {{ activity.7 }}<br/><br>
+            Category: {{ activity.2 }}<br/>
+            <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a>
+          </td>
+          <!--
+          <td> {{ activity.1 }}</td>
+          <td> {{ activity.2 }}</td>
+          <td> {{ activity.4 }}</td>
+          <td> {{ activity.5 }}</td>
+          <td> {{ activity.6 }}</td>
+          <td> {{ activity.7 }}</td>
+          <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
+          -->
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
     <br/>
 
 
@@ -64,13 +89,13 @@
     <form action="{% url 'index' %}" method="post">
       {% csrf_token %}
       <label for="category_id" class="control-label requiredField">Categories (multi-select with ctrl)</label> 
-      <div class="controls"><select name="categories" id="categories" multiple size="10">
+      <div class="controls"><select name="categories" id="categories" multiple size="9">
         {% for category in categories %}
         <option value= "{{category.0}}" >{{category.0}}</option>
         {% endfor %} 
         </select> </div>
-        <label for="period_id" class="control-label requiredField">Show Activities Within</label> 
-      <div class="controls"><select name="display_period" id="display_period" multiple size="1">
+      <label for="period_id" class="control-label requiredField">Show Activities Within</label> 
+      <div class="controls"><select name="display_period" id="display_period" multiple size="2">
         <option value= "1_week" >1 Week</option>
         <option value= "1_month" >1 Month</option>
         </select> </div>
