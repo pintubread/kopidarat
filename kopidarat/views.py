@@ -514,7 +514,7 @@ def admin_inactive_users(request):
 
         context['list_of_inactive_users'] = list_of_inactive_users
 
-        return render(request, 'admin_inactive_user.html', context)
+        return render(request, 'admin_inactive_users.html', context)
     else:
         return HttpResponseRedirect(reverse('admin_index'))
     
