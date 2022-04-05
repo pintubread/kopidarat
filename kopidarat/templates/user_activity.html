@@ -29,7 +29,7 @@
         <th>Capacity</th>
         <th>Participants List</th>
       </thead>
-      {% for activity in past_inviter_list %}
+      {% for activity in inviter_past_list %}
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.8 }}</td>
@@ -68,7 +68,7 @@
         <th>Edit Activity</th>
         <th>Participants List</th>
       </thead>
-      {% for activity in inviter_list %}
+      {% for activity in inviter_future_list %}
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.1 }}</td>
@@ -112,7 +112,7 @@
         <th>See Participants</th>
         <th>Cancel Joining</th>
       </thead>
-      {% for activity in upcoming_activities_list %}
+      {% for activity in joined_future_activities_list %}
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.1 }}</td>
@@ -153,7 +153,7 @@
         <th>Venue</th>
         <th>Review</th>
       </thead>
-      {% for activity in joined_activities_list %}
+      {% for activity in joined_past_activities_list %}
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.1 }}</td>
