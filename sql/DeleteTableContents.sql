@@ -6,3 +6,5 @@ DELETE FROM category;
 DELETE FROM administrator;
 DELETE FROM member;
 DELETE FROM users;
+DELETE FROM random_comments;
+DELETE FROM random_report;

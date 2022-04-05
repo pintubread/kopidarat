@@ -1,35 +1,40 @@
 {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'review.css' %}" />
 <html>
   <head>
     <title>Create Review</title>
   </head>
   <body>
-    <h2>Add New Review</h2>
-    <a href="index">Back to home</a>
+    <div class="container">
+      <div class="form-wrap">
+        <h2>Add New Review</h2>
+        <a href="index">Back to home</a>
 
-    {% if message %}
-    <div>{{ message }}</div>
-    {% endif %}
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
 
-    <form action="{% url 'review' %}" method="post">
-      {% csrf_token %}
-      <div class="form-group">
-        <input
-          class="form-control"
-          type="number"
-          name="activity_id"
-          placeholder="Activity ID"
-        />
+        <form action="{% url 'review' %}" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="number"
+              name="activity_id"
+              placeholder="Activity ID"
+            />
+          </div>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="text"
+              name="comment"
+              placeholder="Enter your review here!"
+            />
+          </div>
+          <input class="btn btn-primary" type="submit" value="Submit Review" />
+        </form>
       </div>
-      <div class="form-group">
-        <input
-          class="form-control"
-          type="text"
-          name="comment"
-          placeholder="Enter your review here!"
-        />
-      </div>
-      <input class="btn btn-primary" type="submit" value="Submit Review" />
-    </form>
+    </div>
   </body>
 </html>
