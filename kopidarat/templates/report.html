@@ -1,7 +1,48 @@
 {% load static %}
 <html>
+<<<<<<< Updated upstream
   <body>
     <h2>HAVEN'T CREATED ANYTHING YET :")"</h2>
     <br /><br />
   </body>
+=======
+  <div class="container">
+    <div class="form-wrap">
+      <body>
+        <h2>Add New Report</h2>
+        <a href="/user_activity">Back to your activities</a>
+
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
+
+        <br/><br>
+
+        <form method="post">
+          {% csrf_token %}
+          You are about to report <b>{{this_participant.1}}</b>
+          <br/><br>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="text"
+              name="comment"
+              placeholder="Enter your report here"
+            />
+          </div>
+          <br/>
+          <div class="form-group">
+            Severity
+            <select id="severity" name="severity">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <input class="btn btn-primary" type="submit" value="Submit Report" />
+        </form>
+      </body>
+    </div>
+  </div>
+>>>>>>> Stashed changes
 </html>
