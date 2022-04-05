@@ -149,7 +149,8 @@ def join(request, activity_id):
             except IntegrityError:
                 message='You have registered for this activity.'
             except Exception as e:
-                message=str(e)
+                string_message=str(e)
+                message=string_message.split(".",1)[0]+"."
             
     return index(request,message)
 
