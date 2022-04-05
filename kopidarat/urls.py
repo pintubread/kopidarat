@@ -63,6 +63,6 @@ urlpatterns = [
 
     # Create report page
     path("report/<str:username>", views.create_report, name='report')
-
+]
 
 
