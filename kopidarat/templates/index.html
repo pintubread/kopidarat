@@ -5,6 +5,9 @@
     <title> Welcome to KopiDarat! </title>
   </head>
   <body>
+
+    <h1>Hello {{full_name}}!</h1>  
+
     {% if message %}
     <div id="overlay"></div>
     <div class="popup">
@@ -16,9 +19,6 @@
       >Back To Main Page</a>
     </div>
     {% endif %}
-
-    <h1>Hello {{full_name}}!</h1>  
-
     <br/><br>
     <a href="{% url 'create_activity' %}"> New Activity </a>
     <br/><br>
