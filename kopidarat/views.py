@@ -213,10 +213,6 @@ def user_activity(request):
             ])
             reports_list = cursor.fetchall()
 
-            # Select the top 5 activities with the highest average rating
-            cursor.execute('SELECT a.activity_id,a.activity_name, CAST(AVG(r.rating) AS NUMERIC(10,2)) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
-            list_of_rated_activities = cursor.fetchall()
-
         context['user_fullname'] = request.session.get('full_name')
         context['past_inviter_list'] = past_inviter_list
         context['inviter_list'] = inviter_list
@@ -224,7 +220,6 @@ def user_activity(request):
         context['joined_activities_list'] = joined_activities_list
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
-        context['list_of_rated_activities'] = list_of_rated_activities
 
         return render(request, 'user_activity.html', context)
 
@@ -915,10 +910,14 @@ def frontpage(request):
         cursor.execute(
             'SELECT category, COUNT(*) FROM activity GROUP BY category ORDER BY COUNT(*) DESC')
         categories = cursor.fetchall()
+    # Select the top 5 activities with the highest average rating
+        cursor.execute('SELECT a.activity_id,a.activity_name, CAST(AVG(r.rating) AS NUMERIC(10,2)) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
+        top_rated_activities = cursor.fetchall()
 
         context["activity_count"] = activity_count
         context["user_count"] = user_count
         context["categories"] = categories
+        context["top_rated_activities"] = top_rated_activities
         return render(request, 'frontpage.html', context)
 
 
