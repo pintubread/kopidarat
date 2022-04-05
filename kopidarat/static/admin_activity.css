@@ -1,0 +1,74 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap");
+body {
+  color: black;
+  text-align: center;
+  background-color: #ff8415;
+  font-family: "Arial Black";
+}
+
+h2 {
+  font-family: "Sora";
+  font-size: 70px;
+}
+
+.content-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.content-table thead tr {
+  background-color: black;
+  color: #ffff;
+  text-align: center;
+  font-weight: bold;
+  font-family: "Arial Black";
+}
+
+.content-table td {
+  padding: 12px 15px;
+}
+
+.content-table tbody tr {
+  border-bottom: 1px solid #17706c;
+  color: white;
+  font-family: "Arial";
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 1000px;
+  border-style: hidden;
+  border-radius: 1em;
+  overflow: hidden;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: #17706c;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #749e9d;
+}
+
+thead {
+  font-family: "Sora";
+  font-size: 16px;
+}
+
+th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.back-to-main-page a {
+  color: #17706c;
+}
+
+a {
+  color: #ff8415;
+  text-decoration: none;
+  font-size: 20px;
+}

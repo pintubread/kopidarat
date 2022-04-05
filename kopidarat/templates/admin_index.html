@@ -1,0 +1,131 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin_index.css' %}" />
+
+<html>
+  <head>
+    <title>Welcome to KopiDarat</title>
+  </head>
+  <body>
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
+    <h1>Hello {{full_name}}!</h1>
+    <h2>Welcome to the administrator view of KopiDarat!</h2>
+    <br /><br />
+    <a href="logout"> Logout </a>
+    <br /><br />
+    <div class="wrapper">
+    <div class="content-table">
+    <h3> Top 5 active users </h3>
+    <table>
+      <thead>
+        <th> Username </th>
+        <th> Joined Activities </th>
+      </thead>
+      {% for user in list_of_active_users %}
+      <tr>
+        <td>{{ user.0 }}</td>
+        <td>{{ user.1 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+  <h3> Top 5 reviewed activities </h3>
+    <table>
+      <thead>
+        <th> Activity ID </th>
+        <th> Activity Name </th>
+        <th> Number of Reviews </th>
+      </thead>
+      {% for review in list_of_reviewed_activities %}
+      <tr>
+        <td>{{ review.0 }}</td>
+        <td>{{ review.1 }}</td>
+        <td>{{ review.2 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </br>
+  <h3> Top 5 rated activities </h3>
+  <table border=1>
+    <thead>
+      <th> Activity ID </th>
+      <th> Activity Name </th>
+      <th> Number of Reviews </th>
+    </thead>
+    {% for review in list_of_rated_activities %}
+    <tr>
+      <td>{{ review.0 }}</td>
+      <td>{{ review.1 }}</td>
+      <td>{{ review.2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</br>
+  <h3> Top 5 most reported users (with severity Medium or higher) </h3>
+    <table>
+      <thead>
+        <th> Username </th>
+        <th> Number of Reports </th>
+      </thead>
+      {% for user in list_of_user_reports %}
+      <tr>
+        <td>{{ user.0 }}</td>
+        <td>{{ user.1 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </br>
+  <h3> Activities Created by Admin </h3>
+    <table>
+      <thead>
+        <th>Activity Name</th>
+        <th>Inviter</th>
+        <th>Category</th>
+        <th>Start Date Time</th>
+        <th>Venue</th>
+        <th>Capacity</th>
+        <th>Edit Activity</th>
+        <th>Participants List</th>
+      </thead>
+      {% for activity in list_of_activities_by_admin %}
+      <tr>
+        <td>{{ activity.3 }}</td>
+        <td>{{ activity.7 }}</td>
+        <td>{{ activity.2 }}</td>
+        <td>{{ activity.4 }}</td>
+        <td>{{ activity.5 }}</td>
+        <td>{{ activity.6 }}</td>
+        <td>
+          <a
+            class="button"
+            href="admin_activity_edit/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Edit
+          </a>
+        </td>
+        <td>
+          <a
+            class="button"
+            href="participants/{{ activity.0 }}"
+            class="text-decoration-none"
+          >
+            Participants List
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+  </br>
+  <div class="row-wrapper">
+    <a href="/admin_user"> Users </a>
+    <a href="/admin_inactive_users"> Inactive Users </a>
+    <a href="/admin_activity"> Activities </a>
+    <a href="/admin_review"> Reviews </a>
+    <a href="/admin_report"> Reports </a>
+  </div>
+  </body>
+</html>

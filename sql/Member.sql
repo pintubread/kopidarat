@@ -1,6 +1,1 @@
-DELETE FROM member;
-
-INSERT INTO member
-SELECT u.email
-FROM users u
-WHERE u.type = 'member';
+INSERT INTO member (SELECT email FROM users WHERE type = 'member');

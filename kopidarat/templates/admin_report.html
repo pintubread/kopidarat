@@ -1,0 +1,45 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin_report.css' %}" />
+
+<html>
+  <body>
+    <div class="content-table">
+      <h2>List of reports made by users</h2>
+      <br />
+      <div class="text1">
+        <a href="/admin_index"> Back to Main Page </a>
+      </div>
+      <br></br>
+      <table>
+        <thead>
+          <th>Submitter</th>
+          <th>Timestamp</th>
+          <th>Reported User</th>
+          <th>Comment</th>
+          <th>Severity</th>
+          <th>Delete Report</th>
+        </thead>
+        <tbody>
+          {% for report in list_of_reports %}
+          <tr>
+            <td>{{ report.0 }}</td>
+            <td>{{ report.1 }}</td>
+            <td>{{ report.2 }}</td>
+            <td>{{ report.3 }}</td>
+            <td>{{ report.4 }}</td>
+            <td>
+              <a
+                class="button"
+                href="admin_report_delete/{{ report.0 }}/{{ report.1 }}"
+                class="text-decoration-none"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

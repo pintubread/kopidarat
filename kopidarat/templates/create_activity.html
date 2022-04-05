@@ -1,7 +1,80 @@
 {% load static %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'create_activity.css' %}"
+/>
 <html>
-  <body>
-    <h2>HAVEN'T CREATED ANYTHING YET :")"</h2>
-    <br /><br />
-  </body>
+  <head>
+    <title>Create Activity</title>
+  </head>
+  <div class="container">
+    <div class="form-wrap">
+      <body>
+        <h2>Add New Activity</h2>
+        <a href="index">Back to home</a>
+        <br />
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
+        <form action="{% url 'create_activity' %}" method="post">
+          {% csrf_token %}
+          <h4>Activity Name</h4>
+          <div class="form-group">
+            <input
+              class="form-control"
+              autofocus
+              type="text"
+              name="activity_name"
+            />
+          </div>
+          <h4>Category</h4>
+          <div class="form-group">
+            <div class="form-group">
+              <select id="category" name="category">
+                {% for category in categories %}
+                <option value="{{category.0}}">{{category.0}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <h4>Start Date and Time</h4>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="datetime-local"
+              name="start_date_time"
+            />
+          </div>
+          <h4>End Date and Time</h4>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="datetime-local"
+              name="end_date_time"
+            />
+          </div>
+          <h4>Venue</h4>
+          <div class="form-group">
+            <input class="form-control" type="text" name="venue" />
+          </div>
+          <h4>Capacity (between 2 to 10)</h4>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="number"
+              name="capacity"
+              min="2"
+              max="10"
+            />
+          </div>
+          <input
+            class="btn btn-primary"
+            type="submit"
+            value="Create Activity"
+          />
+        </form>
+      </body>
+    </div>
+  </div>
 </html>

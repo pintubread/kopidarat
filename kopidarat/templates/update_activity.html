@@ -1,0 +1,72 @@
+{% load static %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'update_activity.css' %}"
+/>
+<html>
+  <head>
+    <title>Update Activity</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-wrap">
+        <h2>Update Activity</h2>
+        <a href="/user_activity">Back to your activities</a>
+
+        <form method="POST">
+          {% csrf_token %}
+          <h4>Activity Name</h4>
+          <div class="form-group">
+            <input
+              autofocus
+              type="text"
+              name="activity_name"
+              value="{{this_activity.3}}"
+            />
+          </div>
+          <h4>Category</h4>
+          <div class="form-group">
+            <input type="text" name="category" value="{{this_activity.2}}" />
+          </div>
+          <h4>Start Date Time</h4>
+          <div class="form-group">
+            <input
+              type="datetime-local"
+              name="start_date_time"
+              value="{{this_activity.4}}"
+            />
+          </div>
+          <h4>End Date Time</h4>
+          <div class="form-group">
+            <input
+              type="datetime-local"
+              name="start_date_time"
+              value="{{this_activity.5}}"
+            />
+          </div>
+          <h4>Venue</h4>
+          <div class="form-group">
+            <input type="text" name="venue" value="{{this_activity.6}}" />
+          </div>
+          <h4>Capacity</h4>
+          <div class="form-group">
+            <input
+              class="form-control"
+              type="number"
+              name="capacity"
+              min="2"
+              max="10"
+              value="{{this_activity.7}}"
+            />
+          </div>
+          <input
+            class="btn btn-primary"
+            type="submit"
+            value="Update Activity"
+          />
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

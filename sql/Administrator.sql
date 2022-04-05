@@ -1,6 +1,1 @@
-DELETE FROM administrator;
-
-INSERT INTO administrator
-SELECT u.email
-FROM users u
-WHERE u.type = 'administrator';
+INSERT INTO administrator (SELECT email FROM users WHERE type = 'administrator');

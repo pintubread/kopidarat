@@ -1,3 +1,9 @@
+{% load static %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'user_activity.css' %}"
+/>
 <html>
   <head>
     <title>Your Activities</title>
@@ -9,17 +15,10 @@
     {% if message %}
     <div>{{ message }}</div>
     {% endif %}
-<<<<<<< Updated upstream
-    <a href="/index"> Back to Main Page </a>
-    <br />
-    <br />
-    <h2>Past Activities that you have created</h2>
-=======
 
     <a href="/"> Back to Main Page </a>
 
     <h2>Upcoming Activities that you created</h2>
->>>>>>> Stashed changes
     <br />
     <table border="1">
       <thead>
@@ -33,26 +32,16 @@
         <th>See Participants</th>
         <th>Edit Activity</th>
       </thead>
-<<<<<<< Updated upstream
-      {% for activity in past_inviter_list %}
-      <tr>
-        <td>{{ activity.3 }}</td>
-        <td>{{ activity.7 }}</td>
-=======
       {% for activity in inviter_future_list %}
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.1 }}</td>
->>>>>>> Stashed changes
         <td>{{ activity.2 }}</td>
         <td>{{ activity.4 }}</td>
         <td>{{ activity.5 }}</td>
         <td>{{ activity.6 }}</td>
-<<<<<<< Updated upstream
-=======
         <td>{{ activity.7 }}</td>
         <td>{{ activity.8 }}</td>
->>>>>>> Stashed changes
         <td>
           <a
             class="button"
@@ -77,11 +66,7 @@
 
     <h2>Your Upcoming Activities</h2>
 
-<<<<<<< Updated upstream
-    <h2>Upcoming Activities that you have created</h2>
-    <br />
-=======
->>>>>>> Stashed changes
+
     <table border="1">
       <thead>
         <th>Activity Name</th>
@@ -89,18 +74,10 @@
         <th>Category</th>
         <th>Start Date Time</th>
         <th>Venue</th>
-<<<<<<< Updated upstream
-        <th>Capacity</th>
-        <th>Edit Activity</th>
-        <th>Participants List</th>
-      </thead>
-      {% for activity in inviter_list %}
-=======
         <th>See Participants</th>
         <th>Cancel Joining</th>
       </thead>
       {% for activity in joined_future_activities_list %}
->>>>>>> Stashed changes
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.7 }}</td>
@@ -111,11 +88,7 @@
         <td>
           <a
             class="button"
-<<<<<<< Updated upstream
-            href="update_activity/{{ activity.0 }}"
-=======
             href="participants/{{ activity.0 }}"
->>>>>>> Stashed changes
             class="text-decoration-none"
           >
             Participants List
@@ -124,11 +97,7 @@
         <td>
           <a
             class="button"
-<<<<<<< Updated upstream
-            href="participants/{{ activity.0 }}"
-=======
             href="{% url 'delete_activity' activity.0 %}"
->>>>>>> Stashed changes
             class="text-decoration-none"
           >
             Delete
@@ -138,14 +107,7 @@
       {% endfor %}
     </table>
 
-<<<<<<< Updated upstream
-    <br /><br />
-
-    <h2>Your Upcoming Activities</h2>
-    <br />
-=======
     <h2>Past activities that you have created</h2>
->>>>>>> Stashed changes
     <table border="1">
       <thead>
         <th>Activity Name</th>
@@ -153,31 +115,15 @@
         <th>Category</th>
         <th>Start Date Time</th>
         <th>Venue</th>
-<<<<<<< Updated upstream
-        <th>Delete Activity</th>
-      </thead>
-      {% for activity in upcoming_activities_list %}
-=======
         <th>Capacity</th>
         <th>See Participants</th>
       </thead>
       {% for activity in inviter_past_list %}
->>>>>>> Stashed changes
       <tr>
         <td>{{ activity.3 }}</td>
         <td>{{ activity.8 }}</td>
         <td>{{ activity.2 }}</td>
         <td>{{ activity.4 }}</td>
-<<<<<<< Updated upstream
-        <td>{{ activity.5 }}</td>      
-        <td>
-          <a
-            class="button"
-            href="{% url 'delete_activity' activity.0 %}"
-            class="text-decoration-none"
-          >
-            Cancel Joining
-=======
         <td>{{ activity.5 }}</td>
         <td>{{ activity.6 }}</td>
         <td>{{ activity.7 }}</td>
@@ -188,7 +134,6 @@
             class="text-decoration-none"
           >
             Participants List
->>>>>>> Stashed changes
           </a>
         </td>
       </tr>
@@ -219,9 +164,6 @@
         <td>
           <a
             class="button"
-<<<<<<< Updated upstream
-            href="{% url 'review' %}"
-=======
             href="participants/{{ activity.0 }}"
             class="text-decoration-none"
           >
@@ -232,7 +174,6 @@
           <a
             class="button"
             href="{% url 'review' activity.0 %}"
->>>>>>> Stashed changes
             class="text-decoration-none"
           >
             Review

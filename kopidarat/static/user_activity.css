@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap");
+body {
+  color: black;
+  text-align: center;
+  background-color: #ff8415;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  font-family: "Arial Black";
+  font-size: 15px;
+}
+
+h1 {
+  font-family: "Sora";
+  font-size: 70px;
+}
+h2 {
+  font-size: 30px;
+}
+
+.content-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.content-table thead tr {
+  background-color: black;
+  color: #ffff;
+  text-align: center;
+  font-weight: bold;
+  font-family: "Arial Black";
+}
+
+.content-table td {
+  padding: 12px 15px;
+}
+
+.content-table tr {
+  border-bottom: 1px solid #17706c;
+  color: white;
+  font-family: "Arial Black";
+}
+
+.content-table thead {
+  background-color: black;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 1000px;
+  border-style: hidden;
+  border-radius: 1em;
+  overflow: hidden;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: #17706c;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #749e9d;
+}
+
+thead {
+  font-family: "Sora";
+  font-size: 16px;
+}
+
+th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.back-to-main-page a {
+  color: #17706c;
+  font-size: 20px;
+}
+
+a {
+  color: #ff8415;
+  font-size: 15px;
+}
+
+.wrapper {
+  background-color: white;
+  border-radius: 1em;
+  padding: 5px 100px 50px 100px;
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}

@@ -18,3 +18,4 @@ INSERT INTO random_comments VALUES ('Cannot remember when was the last time I ha
 INSERT INTO random_comments VALUES ('Made great memories and friends from the hangout!');
 INSERT INTO random_comments VALUES ('It was my first time trying and turns out it is not that bad');
 INSERT INTO random_comments VALUES ('Had a fun and chill time with everyone');
+

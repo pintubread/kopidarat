@@ -1,7 +1,31 @@
 {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'review.css' %}" />
 <html>
+  <head>
+    <title>Create Review</title>
+  </head>
   <body>
-    <h2>HAVEN'T CREATED ANYTHING YET :")"</h2>
-    <br /><br />
+    <div class="container">
+      <div class="form-wrap">
+      <h2>Add review for {{activity_details.1}} organised by {{activity_details.0}}</h2>
+      <a href="/index">Back to home</a>
+
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
+
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="comment"
+          placeholder="Enter your review here!"
+        />
+      </div>
+      <input class="btn btn-primary" type="submit" value="Submit Review" />
+    </form>
   </body>
 </html>

@@ -1,0 +1,45 @@
+{% load static %}
+<html>
+  <body>
+    <a href="/admin_index"> Back to Main Page </a>
+    <h2>Users who have never joined any activity</h2>
+    <br>
+    <table border="1">
+        <thead>
+          <th>Full Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Phone Number</th>
+          <th>Reports written</th>
+          <th>Edit User</th>
+          <th>Delete User</th>
+        </thead>
+        {% for user in list_of_users %}
+        <tr>
+          <td>{{ user.0 }}</td>
+          <td>{{ user.1 }}</td>
+          <td>{{ user.2 }}</td>
+          <td>{{ user.3 }}</td>
+          <td>{{ user.4 }}</td>
+          <td>
+            <a
+              class="button"
+              href="admin_user_edit/{{ user.2 }}"
+              class="text-decoration-none"
+            >
+              Edit
+            </a>
+          </td>
+          <td>
+            <a
+              class="button"
+              href="admin_user_delete/{{ user.2 }}"
+              class="text-decoration-none"
+            >
+              Delete
+            </a>
+          </td>
+        </tr>
+  
+        {% endfor %}
+      </table>
