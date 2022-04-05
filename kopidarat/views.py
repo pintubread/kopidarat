@@ -31,18 +31,40 @@ def index(request,*kwargs):
         message=''.join(kwargs)
     if user_email is not False:
         with connection.cursor() as cursor:
+            cursor.execute("SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)  ORDER BY a.start_date_time ASC")
+            recommended_activities = cursor.fetchall()
+        
+        # Put all the records inside the dictionary context
+        context = {'recommended_activities':recommended_activities,
+        'message':message}
+        return render(request, "index.html", context)
+    else:
+        return HttpResponseRedirect(reverse("frontpage"))
+
+
+def all_activities(request,*kwargs):
+    '''
+    Index view function responsible for the main page of the website.
+    Takes in the request and returns the rendering of the main page.
+
+    NOTE: The function for joining events is refactored out for better code clarity. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the main page (path: '') 
+    '''
+    # Checking if user is logged in
+    user_email = request.session.get("email", False)
+    message=''
+    if kwargs:
+        message=''.join(kwargs)
+    if user_email is not False:
+        with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
         ordering_sql = " ORDER BY a.start_date_time ASC"
-        
-        # Get recommended activities:
-        # All upcoming activities in the next 7 days whose categories have been joined by the user
-        recommendations_sql=" AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)"
-        with connection.cursor() as cursor:
-            cursor.execute(all_activities_sql+recommendations_sql+ordering_sql)
-            recommended_activities = cursor.fetchall()
         
         
         if request.method == "POST":
@@ -81,15 +103,13 @@ def index(request,*kwargs):
                 activities = cursor.fetchall()
 
         # Put all the records inside the dictionary context
-        context = {'recommended_activities':recommended_activities,
-        'records' : activities,
+        context = {'records' : activities,
         'full_name':request.session.get("full_name"),
         'categories':categories,
         'message':message}
-        return render(request, "index.html", context)
+        return render(request, "all_activities.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
-
 
 def create_activity(request):
     '''
