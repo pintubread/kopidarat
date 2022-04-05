@@ -10,8 +10,6 @@ from dateutil.relativedelta import relativedelta
 # Custom imports
 import datetime
 
-from zmq import Message
-
 # View Functions for main pages for the member's side of the website
 
 
@@ -516,7 +514,7 @@ def admin_inactive_users(request):
 
         context['list_of_inactive_users'] = list_of_inactive_users
 
-        return render(request, 'admin_user.html', context)
+        return render(request, 'admin_inactive_user.html', context)
     else:
         return HttpResponseRedirect(reverse('admin_index'))
     
