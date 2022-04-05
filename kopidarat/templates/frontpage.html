@@ -34,6 +34,22 @@
         {%endfor%}
         </table>
     <br></br>
+    <h2>
+        Our top rated activities
+    </h2>
+        <br>
+        <table border=1> 
+            <thead>
+                <th> Activity Name</th>
+                <th> Average Rating </th>
+            </thead>
+            {% for activity in top_rated_activities %}
+            <tr>
+                <td> {{ activity.1 }}</td>
+                <td> {{ activity.2 }}</td>
+            </tr>
+            {%endfor%}
+            </table>
     <h3>
     Interested? <a href='register'> Sign up now. </a> 
     </h3>

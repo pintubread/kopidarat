@@ -2,7 +2,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'index.css' %}" />
 <html>
   <head>
-    <title> Welcome to KopiDarat! </title>
+    <title> KopiDarat Activities </title>
   </head>
   <body>
   <style>
@@ -11,7 +11,7 @@
     }
 
     .rec_th, .rec_td {
-        padding: 20px 60px;
+        padding: 20px 30px;
     }
 
     .table-wrap {
@@ -35,77 +35,12 @@
     <table border="1">
       <thead>
         <th><a href="{% url 'create_activity' %}"> New Activity </a></th>
+        <th><a href="{% url 'report' %}"> New Report </a></th>
         <th><a href="{% url 'user_activity' %}"> Your Activities </a></th>
-        <th><a href="{% url 'report' %}"> Write Report </a></th>
-
         <th><a href="{% url 'logout' %}"> Logout </a></th>
       </thead>
     </table>
-    
-    <h2> Recommended For You</h2>
-
-    <br/>
-    <div class = "table-wrap">
-      <table class="recommendation">
-        <!--
-        <thead>
-            <th> Activity Name </th>
-            <th> Inviter </th>
-            <th> Category </th>
-            <th> Start Date Time </th>
-            <th> Venue </th>
-            <th> Joined </th>
-            <th> Capacity </th>
-            <th> Join </th>
-        </thead>
-      -->
-        {% for activity in recommended_activities %}
-        <tr>
-          <td class="rec_td"> 
-            <h2>{{ activity.3 }}</h2>
-            <h3>{{ activity.6 }}</h3>
-            <h4>{{ activity.4 }} - {{ activity.5 }}</h4>
-            {{ activity.1 }}<br/>
-            {{ activity.8 }}/
-            {{ activity.7 }}<br/><br>
-            
-            Category: {{ activity.2 }}<br/>
-            <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a>
-          </td>
-          <!--
-          <td> {{ activity.1 }}</td>
-          <td> {{ activity.2 }}</td>
-          <td> {{ activity.4 }}</td>
-          <td> {{ activity.5 }}</td>
-          <td> {{ activity.6 }}</td>
-          <td> {{ activity.7 }}</td>
-          <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
-          -->
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
-
-    <br/>
-    <div class = "table-wrap">
-      <table class="recommendation">
-
-        {% for activity in recommended_activities %}
-        <tr>
-          <td class="rec_td"> 
-            <h2>{{ activity.3 }}</h2>
-            <h3>{{ activity.6 }}</h3>
-            <h4>{{ activity.4 }} - {{ activity.5 }}</h4>
-            {{ activity.1 }}<br/>
-            {{ activity.8 }}/
-            {{ activity.7 }}<br/><br>
-            
-            Category: {{ activity.2 }}<br/>
-            <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a>
-          </td>
-
-
-    <h2> Available Activities </h2>
+<h2> Available Activities </h2>
     <form action="{% url 'index' %}" method="post">
       {% csrf_token %}
       <label for="category_id" class="control-label requiredField">Categories (multi-select with ctrl)</label> 
@@ -149,6 +84,4 @@
         <td> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </td>
       </tr>
       {% endfor %}
-
   </body>
-</html>
