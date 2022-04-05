@@ -5,22 +5,18 @@
     <div class="form-wrap">
       <body>
         <h2>Add New Report</h2>
-        <a href="index">Back to home</a>
+        <a href="/user_activity">Back to your activities</a>
 
         {% if message %}
         <div>{{ message }}</div>
         {% endif %}
 
-        <form action="{% url 'report' %}" method="post">
+        <br/><br>
+
+        <form method="post">
           {% csrf_token %}
-          <div class="form-group">
-            <input
-              class="form-control"
-              type="text"
-              name="username"
-              placeholder="Username"
-            />
-          </div>
+          You are about to report <b>{{this_participant.1}}</b>
+          <br/><br>
           <div class="form-group">
             <input
               class="form-control"
@@ -29,11 +25,13 @@
               placeholder="Enter your report here"
             />
           </div>
+          <br/>
           <div class="form-group">
+            Severity
             <select id="severity" name="severity">
-              <option value="low">low</option>
-              <option value="medium">medium</option>
-              <option value="high">high</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
             </select>
           </div>
           <input class="btn btn-primary" type="submit" value="Submit Report" />

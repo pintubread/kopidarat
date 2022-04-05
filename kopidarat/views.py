@@ -11,8 +11,6 @@ from dateutil.relativedelta import relativedelta
 import datetime
 
 # View Functions for main pages for the member's side of the website
-
-
 def index(request,*kwargs):
     '''
     Index view function responsible for the main page of the website.
@@ -40,7 +38,6 @@ def index(request,*kwargs):
         return render(request, "index.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
-
 
 def all_activities(request,*kwargs):
     '''
@@ -127,12 +124,403 @@ def create_activity(request):
     if user_email is not False:
         context = {}
         with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM category')
-            categories = cursor.fetchall()
-            context["categories"] = categories
+            cursor.execute('INSERT INTO review VALUES (%s %s %s %s)', [
+                request.POST['activity_id'],datetime.datetime.now(),request.POST['participant'],
+                request.POST['comment']
+            ])
+            user = cursor.fetchone()
+
+        if user is not None:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT u.full_name, u.username, u.email, u.phone_number, (CASE WHEN u.email=a.inviter THEN 'Inviter' ELSE 'Participant' END) AS remarks FROM users u, joins j, activity a WHERE j.activity_id = a.activity_id AND j.activity_id=%s AND u.email=j.participant AND u.email<>%s",
+                            [int(activity_id), user_email])
+                participants = cursor.fetchall()
+
+                cursor.execute(
+                    'SELECT a.activity_name,a.inviter FROM activity a WHERE a.activity_id=%s', [activity_id])
+                activity_name, inviter = cursor.fetchone()
+
+                has_passed = False
+                cursor.execute('SELECT a.end_date_time from activity a WHERE a.activity_id=%s',[activity_id])
+                end_time = cursor.fetchone()
+
+                if end_time[0] < datetime.datetime.now():
+                    has_passed = True
+
+            context['has_passed'] = has_passed
+            context["participants"] = participants
+            context["activity_name"] = activity_name
+            context["inviter"] = inviter
+            return render(request, 'participants.html', context)
+        else:
+            message="You are not registered for this activity, hence you are not authorised to view this page."
+            return index(request,message)
+
+    return HttpResponseRedirect(reverse("index"))
+
+
+def create_review(request,activity_id):
+    '''
+    create_review view function which is responsible for the creating review page.
+    Takes in the request and returns a render function to render the review page.
+    Argument: 
+        request: HTTP request
+    Return: 
+        render function: renders the review page (path: /create_review)
+    '''
+    user_email = request.session.get("email", False)
+    message = ""
+    context={}
+
+    if user_email is not False:
+
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
+            
+            activity_details = cursor.fetchone()
+            context["activity_details"]=activity_details
+
+            if request.method == 'POST':
+                try:
+                    cursor.execute('INSERT INTO review VALUES (%s,%s,%s,%s)', [
+                                request.POST['activity_id'], datetime.datetime.now(
+                                ), user_email,
+                                request.POST['comment']
+                            ])
+                except Exception as e:
+                    message=str(e)
+                    
+        context["message"]=message
+        return render(request, 'review.html', {"message": message})
+    else:
+        return HttpResponseRedirect(reverse("index"))
+
+
+def create_report(request, username):
+    '''
+    create_report view function which is responsible for the reports page.
+    Takes in the request and returns a render function to render the reports page.
+    Argument: 
+        request: HTTP request
+    Return:
+        render function: renders the reports page (path: /create_report)
+    '''
+    user_email = request.session.get("email", False)
+    context={}
+    message = ""
+
+    if user_email is not False:
+        
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM users WHERE username=%s', [username])
+            this_participant=cursor.fetchone()
+
+        if request.method == 'POST':
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute('INSERT INTO report VALUES (%s,%s,(SELECT email FROM users WHERE username=%s),%s,%s)', [
+                        user_email, datetime.datetime.now(), username,
+                        request.POST['comment'], request.POST['severity']])
+                    cursor.execute('SELECT * FROM users WHERE username=%s', [username])
+                    this_participant=cursor.fetchone()
+                except IntegrityError:
+                    message = 'There exists no user with the username '+request.POST['username']+'. Please try again.'
+
+        context['message'] = message
+        context['this_participant'] = this_participant
+        return render(request, 'report.html', context)
+
+    return HttpResponseRedirect(reverse("participants.html"))
+
+# View functions for the admin side of the website
+def admin_index(request):
+    '''
+    index_admin view function that is responsible for the rendering of the administrator's page.
+    Takes in a request and returns the rendering of the administrator's page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the administrator's main page (path: /admin_index)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        # dictionary to store all the values
+        context = dict()
+
+        with connection.cursor() as cursor:
+
+            # Select the top 5 most active users (identified by usernames) based on the number of activities joined
+            cursor.execute(
+                'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join DESC ,u.username ASC LIMIT 5')
+            list_of_active_users = cursor.fetchall()
+
+            # Select the top 5 most inactive users (identified by usernames) based on the number of activities joined
+            #cursor.execute(
+                #'SELECT u.username, COUNT(j.participant) AS total_join FROM users u, joins j WHERE u.email = j.participant GROUP BY u.username ORDER BY total_join ASC ,u.username ASC LIMIT 5')
+           #cursor.execute(
+                #'SELECT u.username FROM users u WHERE u.email NOT IN (SELECT j.participant FROM joins j)'
+            #)
+            #list_of_inactive_users = cursor.fetchall()
+
+            # Select the top 5 activities with the most reviews, by counting the number of reviews
+            cursor.execute('SELECT a.activity_id,a.activity_name, COUNT(r.comment) AS total_reviews FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY total_reviews DESC, a.activity_id ASC LIMIT 5')
+            list_of_reviewed_activities = cursor.fetchall()
+
+            # Select the 5 most reported users (counted if the severity is medium or high only)
+            cursor.execute("SELECT u.username, COUNT(r.comment) AS total_reports FROM users u, report r WHERE u.email = r.report_user AND (r.severity = 'medium' OR r.severity = 'high') GROUP BY u.username ORDER BY total_reports DESC, u.username ASC LIMIT 5")
+            list_of_user_reports = cursor.fetchall()
+
+            # Select activities created by administrators
+            cursor.execute("SELECT * FROM activity a, users u WHERE a.inviter = u.email AND u.type = 'administrator' ORDER BY a.start_date_time ASC")
+            list_of_activities_by_admin = cursor.fetchall()
+
+        context = {
+            'list_of_active_users': list_of_active_users,
+            #'list_of_inactive_users': list_of_inactive_users,
+            'list_of_reviewed_activities': list_of_reviewed_activities,
+            'list_of_user_reports': list_of_user_reports,
+            'list_of_activities_by_admin': list_of_activities_by_admin
+        }
+        return render(request, 'admin_index.html', context)
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+
+def admin_user(request):
+    '''
+    user_admin view function responsible for the list of users page from the admin side.
+    Takes in the request and returns the rendering of the admin_user page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user page (path: /admin_user)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        with connection.cursor() as cursor:
+            # Get the list of users
+            cursor.execute(
+                'SELECT * FROM users ORDER BY type ASC, full_name ASC')
+            list_of_users = cursor.fetchall()
+
+        context['list_of_users'] = list_of_users
+
+        return render(request, 'admin_user.html', context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_inactive_users(request):
+    '''
+    view function responsible for displaying the list of users who never participated in any activity.
+    Takes in the request and returns the rendering of the admin_user page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user page (path: /admin_user)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT u.full_name, u.username, u.email, u.phone_number, reports.num_reports_made FROM users u, (SELECT r.submitter as submitter, COUNT(*) AS num_reports_made FROM report r GROUP BY r.submitter) AS reports WHERE u.email NOT IN (SELECT j.participant FROM joins j) AND reports.submitter = u.email AND u.type<>'administrator'"
+            )
+            list_of_inactive_users = cursor.fetchall()
+
+        context['list_of_inactive_users'] = list_of_inactive_users
+
+        return render(request, 'admin_inactive_users.html', context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+    
+            
+
+
+def admin_user_create(request):
+    '''
+    admin_user_create view function responsible for the creation of users from the admin side.
+    Takes in the request and returns the rendering of the admin_user_create page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user_create page (path: /admin_user_create)
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    context = dict()
+    message = ''
+
+    if user_type == 'administrator' and user_email is not False:
 
         if request.method == 'POST':
 
+            with connection.cursor() as cursor:
+                try:
+                    created_user_type = request.POST['type']
+
+                    cursor.execute('INSERT INTO users (full_name,username,email,phone_number,password,type) VALUES (%s,%s,%s,%s,%s,%s)', [
+                        request.POST['full_name'], request.POST['username'], request.POST[
+                            'email'], request.POST['phone_number'], request.POST['password'], request.POST['type']
+                    ])
+
+                    if created_user_type == 'member':
+                        cursor.execute('INSERT INTO member (email) VALUES (%s)', [
+                                    request.POST['email']])
+                    elif created_user_type == 'administrator':
+                        cursor.execute('INSERT INTO administrator (email) VALUES (%s)', [
+                                    request.POST['email']])
+                    else:
+                        message = 'Please indicate a right user type'
+                except Exception as e:
+                    message = str(e)
+
+        context['message'] = message
+        return render(request, 'admin_user_create.html', context)
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+
+def admin_user_edit(request, edit_email):
+    '''
+    admin_user_edit view function responsible for the editing of user's credentials from the admin side.
+    Takes in the request and the user's email and returns the rendering of the admin_user_edit page.
+    Argument:
+        request: HTTP request
+        edit_email: user email that wants to be edited
+    Return:
+        render function: renders the admin_user_edit page (path: /admin_user_edit/edit_email)
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+    context = {}
+    message = ''
+
+    if user_type == 'administrator' and user_email is not False:
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                'SELECT * FROM users WHERE email = %s', [edit_email])
+            obj = cursor.fetchone()
+
+        if request.method == 'POST':
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute('UPDATE users SET full_name = %s, username = %s, phone_number = %s, password = %s, type = %s WHERE email = %s', [
+                        request.POST['full_name'], request.POST['username'], request.POST[
+                            'phone_number'], request.POST['password'], request.POST['type'], edit_email
+                    ])
+                    cursor.execute(
+                        'SELECT * FROM users WHERE email = %s', [edit_email])
+                    obj = cursor.fetchone()
+                except Exception as e:
+                    message = str(e)
+
+        context['obj'] = obj
+        context['message'] = message
+        return render(request, 'admin_user_edit.html', context)
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+
+def admin_user_delete(request, delete_email):
+    '''
+    admin_user_delete view function responsible for the deleting users from the database from the admin side.
+    Takes in the request and the user's email and executes a SQL query to delete the user from the database.
+    Argument:
+        request: HTTP request
+        delete_email: user email that wants to be deleted
+    Return: 
+        HTTP Response Redirect to the admin_user page
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        if request.method == 'POST':
+
+            with connection.cursor() as cursor:
+
+                cursor.execute(
+                    'SELECT type FROM users WHERE email = %s', [delete_email])
+                delete_type = cursor.fetchone()
+
+                # check which type, to correctly initiate the ON DELETE CASCADE
+                # also check so that the admin does not delete him/herself
+                if delete_type == 'administrator' and user_email != delete_email:
+                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
+                    cursor.execute(
+                        'DELETE FROM administrator WHERE email = %s', [delete_email])
+                    # TODO: pops up the message if the admin is trying to delete him/herself
+                elif delete_type == 'member':
+                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
+                    cursor.execute(
+                        'DELETE FROM member WHERE email = %s', [delete_email])
+
+        return HttpResponseRedirect(reverse('admin_user'))
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+
+def admin_activity(request):
+    '''
+    admin_activity view function responsible for the list of activities page from the admin side.
+    Takes in the request and returns the rendering of the admin_activity page. 
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_activity page (path: /admin_activity)
+    '''
+    user_email = request.session.get("email", False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+
+        with connection.cursor() as cursor:
+            # Get the list of activities
+            cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity, a.end_date_time FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND count_participant.count <= a.capacity GROUP BY a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity ORDER BY a.start_date_time ASC')
+            list_of_activities = cursor.fetchall()
+
+        context['list_of_activities'] = list_of_activities
+
+        return render(request, 'admin_activity.html', context)
+    else:
+        return HttpResponseRedirect(reverse('admin_index'))
+
+def admin_activity_create(request):
+    '''
+    admin_activity_create view function responsible for the creation of activity from the admin side.
+    Takes in the request and returns the rendering of the admin_activity_create page.
+    Argument:
+        request: HTTP request
+    Return:
+        render function: renders the admin_user_create page (path: /admin_activity_create)
+    '''
+    user_email = request.session.get('email', False)
+    user_type = request.session.get('type')
+
+    if user_type == 'administrator' and user_email is not False:
+
+        context = dict()
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM category')
+            categories = cursor.fetchall()
+
+        if request.method == 'POST':
             with connection.cursor() as cursor:
                 try:
                     cursor.execute('CALL create_new_activity(%s,%s,%s,%s,%s,%s,%s)',[

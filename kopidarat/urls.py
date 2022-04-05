@@ -62,7 +62,7 @@ urlpatterns = [
     path("review/<int:activity_id>", views.create_review, name='review'),
 
     # Create report page
-    path("report", views.create_report, name='report')
-]
+    path("report/<str:username>", views.create_report, name='report')
+
 
 
