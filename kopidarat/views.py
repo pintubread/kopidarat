@@ -35,6 +35,8 @@ def index(request,*kwargs):
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
+        now = datetime.datetime.now()
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, a.capacity, (SELECT COUNT(*) FROM joins j WHERE j.activity_id=a.activity_id) AS joined FROM activity a1 WHERE a1.activity_id=a.activity_id) FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
 
         all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND a.start_date_time > NOW()"
         ordering_sql = " ORDER BY a.start_date_time ASC"
@@ -52,13 +54,14 @@ def index(request,*kwargs):
             list_of_categories = request.POST.getlist('categories')
             category_filters = ""
             category_filter_sql=""
-            
+            #Check if any category is chosen
             if len(list_of_categories)>0:
                 for category in list_of_categories:
-                    category_filters += " OR a.category="+"'"+category+"'"
-                category_filter_sql = " AND("+category_filters[3:]+")" 
+                    category_filters+= " OR a.category=" + "'" + category + "'"# starting OR deleted, the rest for combining the categories 
 
-            #filtering method for time
+                category_filter_sql = " AND (" + category_filters[3:] + ")" # starts from 3 because to delete the starting 'OR'
+
+            # Filtering the time selection
             list_of_time_filters = request.POST.getlist('display_period')
             time_filter_sql=""
             #Check if any time filter is chosen
@@ -198,6 +201,7 @@ def user_activity(request):
                 user_email
             ])
             joined_activities_list = cursor.fetchall()
+
 
             # Get table of reviews that user has created
             cursor.execute('SELECT a.activity_id, r.timestamp, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
@@ -1032,38 +1036,3 @@ def register(request):
     return render(request, "register.html", context)
 
 
-# TODO: DELETE THIS PORTION AND THE CORRESPONDING HTML PAGES AND LINKS
-def forget_password(request):
-    if request.method == "POST":
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM user WHERE email = %s",
-                           [request.POST['email']])
-            user_fullname = cursor.fetchone()
-            if user_fullname == None:
-                return render(request, "forget_password.html",
-                              {"message": "The given email is not registered under any account."})
-            else:
-                html_message = loader.render_to_string('reset_password_email.html',
-                                                       {'full_name': user_fullname})
-                send_mail(subject="KopiDarat Account Password Reset",
-                          message="Looks like you've forgotten your KopiDarat password! To reset your password, follow the link below:",
-                          recipient_list=[request.post['email'], ],
-                          fail_silently=False, html_message=html_message)
-                return render(request, "reset_password_email_sent.html")
-    return render(request, "forget_password.html")
-
-
-def reset_password(request):
-    if request.method == "POST":
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "reset_password.html", {
-                "message": "Passwords must match."
-            })
-
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE user SET password=%s WHERE email=%s", [
-                           request.POST['password'], request.user.email])
-            return render(request, "reset_password_successful.html")
-    return render(request, "reset_password.html")

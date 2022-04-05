@@ -7,34 +7,25 @@
   <body>
     <div class="container">
       <div class="form-wrap">
-        <h2>Add New Review</h2>
-        <a href="index">Back to home</a>
+      <h2>Add review for {{activity_details.1}} organised by {{activity_details.0}}</h2>
+      <a href="/index">Back to home</a>
 
         {% if message %}
         <div>{{ message }}</div>
         {% endif %}
 
-        <form action="{% url 'review' %}" method="post">
-          {% csrf_token %}
-          <div class="form-group">
-            <input
-              class="form-control"
-              type="number"
-              name="activity_id"
-              placeholder="Activity ID"
-            />
-          </div>
-          <div class="form-group">
-            <input
-              class="form-control"
-              type="text"
-              name="comment"
-              placeholder="Enter your review here!"
-            />
-          </div>
-          <input class="btn btn-primary" type="submit" value="Submit Review" />
-        </form>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <input
+          class="form-control"
+          type="text"
+          name="comment"
+          placeholder="Enter your review here!"
+        />
       </div>
-    </div>
+      <input class="btn btn-primary" type="submit" value="Submit Review" />
+    </form>
   </body>
 </html>
