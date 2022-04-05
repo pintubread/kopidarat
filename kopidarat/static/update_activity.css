@@ -3,11 +3,17 @@ body {
   color: black;
   text-align: center;
   background-color: #ff8415;
+  font-family: "Arial";
 }
 h2 {
   font-size: 50px;
   font-family: "Sora";
   color: black;
+}
+h4 {
+  font-size: 15px;
+  text-align: left;
+  color: #666;
 }
 .container {
   max-width: 500px;
@@ -22,7 +28,7 @@ h2 {
   display: block;
   color: #666;
   padding-left: 10px;
-  font-family: "futura";
+  font-family: "Arial Black";
 }
 .form-wrap .form-group input {
   width: 100%;
@@ -35,7 +41,7 @@ h2 {
   margin-bottom: 5px;
 }
 .form-wrap input[type="submit"] {
-  font-family: "futura";
+  font-family: "Arial Black";
   display: block;
   width: 100%;
   background: black;

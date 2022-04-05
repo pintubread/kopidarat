@@ -11,7 +11,10 @@
     <br />
     <a href="/admin_activity_create"> Create new activity </a>
     <br />
-    <a href="/admin_index"> Back to Main Page </a>
+    <div class="back-to-main-page">
+      <a href="/admin_index"> Back to Main Page </a>
+    </div>
+    <br></br>
 
     <div class="content-table">
       <table border="1">
@@ -28,37 +31,41 @@
           <th>Edit Activity</th>
           <th>Delete Activity</th>
         </thead>
-        {% for activity in list_of_activities %}
-        <tr>
-          <td>{{ activity.0 }}</td>
-          <td>{{ activity.3 }}</td>
-          <td>{{ activity.1 }}</td>
-          <td>{{ activity.2 }}</td>
-          <td>{{ activity.4 }}</td>
-          <td>{{ activity.8 }}</td>
-          <td>{{ activity.5 }}</td>
-          <td>{{ activity.6 }}</td>
-          <td>{{ activity.7 }}</td>
-          <td>
-            <a
-              class="button"
-              href="admin_activity_edit/{{ activity.0 }}"
-              class="text-decoration-none"
-            >
-              Edit
-            </a>
-          </td>
-          <td>
-            <a
-              class="button"
-              href="admin_activity_delete/{{ activity.0 }}"
-              class="text-decoration-none"
-            >
-              Delete
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
+        <tbody>
+          {% for activity in list_of_activities %}
+          <tr>
+            <td>{{ activity.0 }}</td>
+            <td>{{ activity.3 }}</td>
+            <td>{{ activity.1 }}</td>
+            <td>{{ activity.2 }}</td>
+            <td>{{ activity.4 }}</td>
+            <td>{{ activity.8 }}</td>
+            <td>{{ activity.5 }}</td>
+            <td>{{ activity.6 }}</td>
+            <td>{{ activity.7 }}</td>
+            <td>
+              <a
+                class="button"
+                href="admin_activity_edit/{{ activity.0 }}"
+                class="text-decoration-none"
+              >
+                Edit
+              </a>
+            </td>
+            <td>
+              <a
+                class="button"
+                href="admin_activity_delete/{{ activity.0 }}"
+                class="text-decoration-none"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+        <tbody></tbody>
       </table>
     </div>
   </body>

@@ -215,18 +215,15 @@ def user_activity(request):
             ])
             reports_list = cursor.fetchall()
 
-            # Select the top 5 activities with the highest average rating
-            cursor.execute('SELECT a.activity_id,a.activity_name, CAST(AVG(r.rating) AS NUMERIC(10,2)) AS rating FROM activity a, review r WHERE a.activity_id = r.activity_id GROUP BY a.activity_id, a.activity_name ORDER BY rating DESC, a.activity_id ASC LIMIT 5')
-            list_of_rated_activities = cursor.fetchall()
+            
 
         context['user_fullname'] = request.session.get('full_name')
-        context['past_inviter_list'] = past_inviter_list
-        context['inviter_list'] = inviter_list
-        context['upcoming_activities_list'] = upcoming_activities_list
-        context['joined_activities_list'] = joined_activities_list
+        context['inviter_past_list'] = past_inviter_list
+        context['inviter_future_list'] = inviter_list
+        context['joined_future_activities_list'] = upcoming_activities_list
+        context['joined_past_activities_list'] = joined_activities_list
         context['reviews_list'] = reviews_list
         context['reports_list'] = reports_list
-        context['list_of_rated_activities'] = list_of_rated_activities
 
         return render(request, 'user_activity.html', context)
 
@@ -362,7 +359,6 @@ def create_review(request,activity_id):
 
         with connection.cursor() as cursor:
             cursor.execute('SELECT u.full_name AS name, a.activity_name AS activity FROM activity a, users u WHERE a.activity_id=%s AND u.email=a.inviter',[activity_id])
-            
             activity_details = cursor.fetchone()
             context["activity_details"]=activity_details
 
@@ -377,7 +373,7 @@ def create_review(request,activity_id):
                     message=str(e)
                     
         context["message"]=message
-        return render(request, 'review.html', {"message": message})
+        return render(request, 'review.html', context)
     else:
         return HttpResponseRedirect(reverse("index"))
 

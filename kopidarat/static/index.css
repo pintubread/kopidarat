@@ -8,6 +8,7 @@ body {
   flex-wrap: wrap;
   align-content: center;
   align-items: center;
+  font-family: "Arial Black";
 }
 
 h1 {
@@ -17,14 +18,130 @@ h1 {
 }
 
 h2 {
-  font-family: "futura";
+  font-family: "Arial Black";
   color: black;
+  font-size: 40px;
+}
+.content-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
+.content-table thead tr {
+  background-color: black;
+  color: #ffff;
+  text-align: center;
+  font-weight: bold;
+  font-family: "Arial Black";
+}
+
+.content-table td {
+  padding: 12px 15px;
+}
+
+.content-table tbody tr {
+  border-bottom: 1px solid #17706c;
+  color: white;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 800px;
+  border-style: hidden;
+  border-radius: 1em;
+  overflow: hidden;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: #17706c;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #749e9d;
+}
+
+thead {
+  font-family: "Sora";
+  font-size: 16px;
+}
+
+th {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+button {
+  display: block;
+  width: 50%;
+  background: black;
+  color: white;
+  padding: 10px;
+  padding-left: 2px;
+  padding-right: 2px;
+  border-radius: 7px;
+  margin-top: 20px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-family: "Arial Black";
+}
 a {
-  margin-bottom: 10px;
+  color: #1d1209;
+  text-decoration: none;
+}
+.wrapper {
+  background-color: white;
+  border-radius: 1em;
+  padding: 5px 10px 20px 10px;
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.control-label {
+  font-family: "Arial Black";
+  font-size: 15px;
+}
+select {
+  width: 100%;
+  margin-top: 20px;
+}
+.controls {
+  width: 50%;
 }
 
 option {
+  font-family: "Arial Black";
+  padding: 5px;
+  text-align: center;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+.row a {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+a {
+  color: black;
+}
+.clearselection a {
+  color: #17706c;
 }

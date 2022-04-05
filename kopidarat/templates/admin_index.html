@@ -14,6 +14,7 @@
     <br /><br />
     <a href="logout"> Logout </a>
     <br /><br />
+    <div class="wrapper">
     <div class="content-table">
     <h3> Top 5 active users </h3>
     <table>
@@ -76,7 +77,7 @@
     </table>
   </br>
   <h3> Activities Created by Admin </h3>
-    <table border="1">
+    <table>
       <thead>
         <th>Activity Name</th>
         <th>Inviter</th>
@@ -116,23 +117,15 @@
       </tr>
       {% endfor %}
     </table>
+  </div>
+</div>
   </br>
-    <h4>To see the list of users, click below</h4>
-    <a href="/admin_user"> List of users </a>
-    <br /><br />
-
-    <h4>To see the list of users who never joined any activity, click below</h4>
-    <a href="/admin_inactive_users"> List of users </a>
-    <br /><br />
-
-    <h4>To see the list of activities, click below</h4>
-    <a href="/admin_activity"> List of activities </a>
-    <br /><br />
-    <h4>To see the list of reviews, click below</h4>
-    <a href="/admin_review"> List of reviews </a>
-    <br /><br />
-    <h4>To see the list of reports, click below</h4>
-    <a href="/admin_report"> List of reports </a>
+  <div class="row-wrapper">
+    <a href="/admin_user"> Users </a>
+    <a href="/admin_inactive_users"> Inactive Users </a>
+    <a href="/admin_activity"> Activities </a>
+    <a href="/admin_review"> Reviews </a>
+    <a href="/admin_report"> Reports </a>
   </div>
   </body>
 </html>

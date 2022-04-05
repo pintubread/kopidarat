@@ -18,40 +18,49 @@
         <div>{{ message }}</div>
         {% endif %}
         <form method="POST">
-          {% csrf_token %} Activity Name
+          {% csrf_token %}
           <div class="form-group">
             <input
               autofocus
               type="text"
               name="activity_name"
               value="{{this_activity.3}}"
+              placeholder="Activity Name"
             />
           </div>
-          Category
           <div class="form-group">
-            <input type="text" name="category" value="{{this_activity.2}}" />
+            <input
+              type="text"
+              name="category"
+              value="{{this_activity.2}}"
+              placeholder="Category"
+            />
           </div>
-          Start Date Time
           <div class="form-group">
+            <h3>Start date and time</h3>
             <input
               type="datetime-local"
               name="start_date_time"
               value="{{this_activity.4}}"
             />
           </div>
-          End Date Time
           <div class="form-group">
+            <h3>End date and time</h3>
             <input
               type="datetime-local"
-              name="start_date_time"
+              name="end_date_time"
               value="{{this_activity.5}}"
+              placeholder="End date and time"
             />
           </div>
-          Venue
           <div class="form-group">
-            <input type="text" name="venue" value="{{this_activity.6}}" />
+            <input
+              type="text"
+              name="venue"
+              value="{{this_activity.6}}"
+              placeholder="Venue"
+            />
           </div>
-          Capacity
           <div class="form-group">
             <input
               class="form-control"
@@ -60,6 +69,7 @@
               min="2"
               max="10"
               value="{{this_activity.7}}"
+              placeholder="Capacity"
             />
           </div>
           <input
