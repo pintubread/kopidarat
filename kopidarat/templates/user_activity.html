@@ -10,14 +10,17 @@
   <h1>Hello {{user_fullname}}!</h1>
   <br />
   <br />
+
+  <button><a href="/"> Back to Main Page </a></button>
+
   {% if message %}
   <div>{{ message }}</div>
   {% endif %}
 
-  <button><a href="/"> Back to Main Page </a></button>
-
   <h2>Upcoming Activities that you created</h2>
-  
+  {% if inviter_future_list_empty%}
+    You have not organised any upcoming activities.
+  {% else %}
   <div class="table-wrap">
     <table class="tableoverflow">
       {% for activity in inviter_future_list %}
@@ -44,10 +47,13 @@
       </tr>
       {% endfor %}
     </table>
+    {% endif %}
   </div>
 
   <h2>Your Upcoming Activities</h2>
-
+  {% if joined_future_activities_list_empty%}
+    You have not joined any upcoming activities.
+  {% else %}
   <div class="table-wrap">
     <table class="tableoverflow">
       {% for activity in joined_future_activities_list %}
@@ -70,9 +76,13 @@
       </tr>
       {% endfor %}
     </table>
+    {% endif %}
   </div>
 
   <h2>Past activities that you have created</h2>
+  {% if inviter_past_list_empty%}
+    You have not organised any activities in the past.
+  {% else %}
   <div class="table-wrap">
   <table class="tableoverflow">
     {% for activity in inviter_past_list %}
@@ -95,12 +105,16 @@
     </tr>
     {% endfor %}
   </table>
+  {% endif %}
   </body>
 </div>
 
   <br /><br />
 
   <h2>Past Activities that you have joined</h2>
+  {% if joined_past_activities_list_empty%}
+    You have not joined any activities in the past.
+  {% else %}
   <br />
   <div class="table-wrap">
     <table class="tableoverflow">
@@ -128,10 +142,14 @@
       {% endfor %}
     </table>
   </div>
+  {% endif %}
 
   <br /><br />
 
   <h2>Your Reviews</h2>
+  {% if reviews_list_empty%}
+    You have not written any reviews.
+  {% else %}
   <br />
   <table border="1">
     <thead>
@@ -149,8 +167,12 @@
     </tr>
     {% endfor %}
   </table>
+  {% endif %}
 
   <h2>Your Reports</h2>
+  {% if reports_list_empty%}
+    You have not written any reports.
+  {% else %}
   <br />
   <table border="1">
     <thead>
@@ -168,6 +190,7 @@
     </tr>
     {% endfor %}
   </table>
+  {% endif %}
 </body>
 
 </html>
