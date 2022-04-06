@@ -25,16 +25,22 @@ def index(request,*kwargs):
     # Checking if user is logged in
     user_email = request.session.get("email", False)
     message=''
+    empty=True
     if kwargs:
         message=''.join(kwargs)
     if user_email is not False:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3)  ORDER BY a.start_date_time ASC")
+            cursor.execute("SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3) AND a.activity_id NOT IN (SELECT a3.activity_id FROM activity a3,joins j3 WHERE j3.participant='"+user_email+"' AND j3.activity_id=a3.activity_id) ORDER BY a.start_date_time ASC")
             recommended_activities = cursor.fetchall()
+            if len(recommended_activities)>0:
+                empty=False
         
         # Put all the records inside the dictionary context
         context = {'recommended_activities':recommended_activities,
         'message':message}
+
+        if empty:
+            context['empty']=empty
         return render(request, "index.html", context)
     else:
         return HttpResponseRedirect(reverse("frontpage"))
@@ -60,7 +66,7 @@ def all_activities(request,*kwargs):
             cursor.execute('SELECT * FROM category')
             categories = cursor.fetchall()
 
-        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW()"
+        all_activities_sql = "SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND AND a.activity_id NOT IN (SELECT a1.activity_id FROM activity a1,joins j1 WHERE j1.participant='"+user_email+"' AND j1.activity_id=a1.activity_id)"
         ordering_sql = " ORDER BY a.start_date_time ASC"
         
         
@@ -134,6 +140,8 @@ def create_activity(request):
                         user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['end_date_time'],request.POST['venue'], request.POST['capacity']])
                 except Exception as e:
                     message = str(e)
+                    if 'violates check constraint "activity_check"' in message:
+                        message = "Activity's end date and time must be after activity's start date and time."
         
         context['message'] = message
         return render(request, 'create_activity.html', context)
@@ -237,7 +245,9 @@ def join(request, activity_id):
                 string_message=str(e)
                 message=string_message.split(".",1)[0]+"."
             
-    return index(request,message)
+        return index(request,message)
+    else:
+        HttpResponseRedirect("index")
 
 def user_activity(request):
     '''
@@ -256,6 +266,12 @@ def user_activity(request):
 
         # need a dictionary to store some of the information that is needed to be passed to the html pages
         context = dict()
+        inviter_past_list_empty=True
+        inviter_future_list_empty=True
+        joined_future_activities_list_empty=True
+        joined_past_activities_list_empty=True
+        reports_list_empty=True
+        reviews_list_empty=True
 
         with connection.cursor() as cursor:
 
@@ -264,36 +280,61 @@ def user_activity(request):
                 user_email
             ])
             past_inviter_list = cursor.fetchall()
+            if len(past_inviter_list)>0:
+                inviter_past_list_empty=False
+            if inviter_past_list_empty:
+                context["inviter_past_list_empty"]=inviter_past_list_empty
 
             # Get the table of upcoming activities where the current user is the inviter
             cursor.execute('SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue, count_participant.count, a.capacity FROM activity a, users u, joins j, (SELECT j1.activity_id, COUNT(j1.participant) as count FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id GROUP BY j1.activity_id) AS count_participant WHERE a.inviter = u.email AND a.inviter = %s AND j.activity_id = a.activity_id AND j.participant = u.email AND count_participant.activity_id = a.activity_id AND a.start_date_time > NOW() ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             inviter_list = cursor.fetchall()
+            if len(inviter_list)>0:
+                inviter_future_list_empty=False
+            if inviter_future_list_empty:
+                context["inviter_future_list_empty"]=inviter_future_list_empty
 
             # Get the table of upcoming activities created by other user where the user has signed up for
             cursor.execute('SELECT a.activity_id, u.full_name, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() <= a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             upcoming_activities_list = cursor.fetchall()
+            if len(upcoming_activities_list)>0:
+                joined_future_activities_list_empty=False
+            if joined_future_activities_list_empty:
+                context["joined_future_activities_list_empty"]=joined_future_activities_list_empty
 
             # Get the table of past activities created by other user where the user has joined
             cursor.execute('SELECT a.activity_id, a.inviter, u.full_name, a.category, a.activity_name, a.start_date_time, a.end_date_time, a.venue FROM joins j, activity a, users u WHERE j.activity_id = a.activity_id AND a.inviter = u.email AND a.inviter <> j.participant AND j.participant = %s AND NOW() > a.start_date_time ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             joined_activities_list = cursor.fetchall()
+            if len(joined_activities_list)>0:
+                joined_past_activities_list_empty=False
+            if joined_past_activities_list_empty:
+                context["joined_past_activities_list_empty"]=joined_past_activities_list_empty
+            
 
             # Get table of reviews that user has created
             cursor.execute('SELECT r.timestamp, a.activity_name, r.rating, r.comment FROM review r, activity a, users u WHERE r.activity_id = a.activity_id AND r.participant = u.email AND r.participant = %s ORDER BY a.start_date_time ASC', [
                 user_email
             ])
             reviews_list = cursor.fetchall()
+            if len(reviews_list)>0:
+                reviews_list_empty=False
+            if reviews_list_empty:
+                context["reviews_list_empty"]=reviews_list_empty
 
             # Get table of reports that user has created
             cursor.execute('SELECT r.timestamp, r.report_user, r.comment, r.severity FROM report r, users u WHERE r.report_user = u.email AND r.submitter = %s ORDER BY r.timestamp ASC', [
                 user_email
             ])
             reports_list = cursor.fetchall()
+            if len(reports_list)>0:
+                reports_list_empty=False
+            if reports_list_empty:
+                context["reports_list_empty"]=reports_list_empty
 
         context['user_fullname'] = request.session.get('full_name')
         context['inviter_past_list'] = past_inviter_list
@@ -508,15 +549,20 @@ def admin_inactive_users(request):
     '''
     user_email = request.session.get("email", False)
     user_type = request.session.get('type')
+    list_of_inactive_users_empty=True
 
     if user_type == 'administrator' and user_email is not False:
 
         context = dict()
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT u.full_name, u.username, u.email, u.phone_number, reports.num_reports_made FROM users u, (SELECT r.submitter as submitter, COUNT(*) AS num_reports_made FROM report r GROUP BY r.submitter) AS reports WHERE u.email NOT IN (SELECT j.participant FROM joins j) AND reports.submitter = u.email AND u.type<>'administrator'"
+                "SELECT u.full_name, u.username, u.email, u.phone_number FROM users u WHERE u.email NOT IN (SELECT j.participant FROM joins j) AND u.type<>'administrator'"
             )
             list_of_inactive_users = cursor.fetchall()
+            if len(list_of_inactive_users)>0:
+                list_of_inactive_users_empty=False
+            if list_of_inactive_users_empty:
+                context['list_of_inactive_users_empty']=list_of_inactive_users_empty
 
         context['list_of_inactive_users'] = list_of_inactive_users
 
@@ -624,29 +670,28 @@ def admin_user_delete(request, delete_email):
 
     if user_type == 'administrator' and user_email is not False:
 
-        if request.method == 'POST':
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT type FROM users WHERE email = %s", [delete_email])
+            delete_type = cursor.fetchone()[0]
 
-            with connection.cursor() as cursor:
-
-                cursor.execute(
-                    'SELECT type FROM users WHERE email = %s', [delete_email])
-                delete_type = cursor.fetchone()
-
-                # check which type, to correctly initiate the ON DELETE CASCADE
-                # also check so that the admin does not delete him/herself
-                if delete_type == 'administrator' and user_email != delete_email:
-                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
-                    cursor.execute(
-                        'DELETE FROM administrator WHERE email = %s', [delete_email])
-                    # TODO: pops up the message if the admin is trying to delete him/herself
-                elif delete_type == 'member':
-                    cursor.execute('DELETE FROM users WHERE email= %s', [delete_email])
-                    cursor.execute(
-                        'DELETE FROM member WHERE email = %s', [delete_email])
+            # check which type, to correctly initiate the ON DELETE CASCADE
+            # also check so that the admin does not delete him/herself
+            if delete_type == 'administrator':
+                if user_email != delete_email:
+                    cursor.execute("DELETE FROM users WHERE email= %s",[delete_email])
+                    cursor.execute("DELETE FROM administrator WHERE email = %s",[delete_email])
+                else:
+                    request.session["message"]="You cannot delete yourself"
+                # TODO: pops up the message if the admin is trying to delete him/herself
+            elif delete_type == 'member':
+                print("Check")
+                cursor.execute("DELETE FROM users WHERE email= %s",[delete_email])
+                cursor.execute("DELETE FROM member WHERE email = %s",[delete_email])
+                print("Hooray")
 
         return HttpResponseRedirect(reverse('admin_user'))
-
-    return HttpResponseRedirect(reverse('admin_index'))
+    else:
+        return HttpResponseRedirect(reverse('index'))
 
 def admin_activity(request):
     '''

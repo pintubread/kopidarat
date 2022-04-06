@@ -3,6 +3,9 @@
   <body>
     <a href="/admin_index"> Back to Main Page </a>
     <h2>Users who have never joined any activity</h2>
+    {% if list_of_inactive_users_empty %}
+    Good news, there are no inactive users! Each user has joined at least 1 activity.
+    {% else %}
     <br>
     <table border="1">
         <thead>
@@ -10,17 +13,15 @@
           <th>Username</th>
           <th>Email</th>
           <th>Phone Number</th>
-          <th>Reports written</th>
           <th>Edit User</th>
           <th>Delete User</th>
         </thead>
-        {% for user in list_of_users %}
+        {% for user in list_of_inactive_users %}
         <tr>
           <td>{{ user.0 }}</td>
           <td>{{ user.1 }}</td>
           <td>{{ user.2 }}</td>
           <td>{{ user.3 }}</td>
-          <td>{{ user.4 }}</td>
           <td>
             <a
               class="button"
@@ -43,3 +44,4 @@
   
         {% endfor %}
       </table>
+      {%endif%}
