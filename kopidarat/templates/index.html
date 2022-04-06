@@ -5,12 +5,7 @@
     <title> Welcome to KopiDarat! </title>
   </head>
   <body>
-    {% if message %}
-    <div id="overlay"></div>
-    <div class="popup">
-      <div class="popupcontent">{{message}}</div>
-    </div>
-    {% endif %}
+
     <br/><br>
     <table border="1">
       <thead>
@@ -23,6 +18,16 @@
     
     <h2> Recommended For You</h2>
 
+    {% if message %}
+    <div id="overlay"></div>
+    <div class="popup">
+      <div class="popupcontent">{{message}}</div>
+    </div>
+    {% endif %}
+
+    {% if empty %}
+    You have not joined any activities, hence we cannot give you any recommendations.
+    {% else %}
     <br/>
     <div class = "table-wrap">
       <table class="tableoverflow">
@@ -36,11 +41,12 @@
             Enrolled: {{ activity.8 }}/{{ activity.7 }}<br/>
             <br>
             Category: {{ activity.2 }}<br/>
-            <button><a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a></button>
+            <button><a class="button" href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a></button>
           </td>
         </tr>
         {% endfor %}
       </table>
     </div>
+    {% endif %}
   </body>
 </html>

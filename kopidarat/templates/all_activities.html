@@ -58,7 +58,9 @@
           Enrolment: {{ activity.8 }}/{{ activity.7 }}<br/>
           <br>
           Category: {{ activity.2 }}
-          <button> <a class='button' href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </button>
+          <button><a class="button" href="participants/{{ activity.0 }}" class="text-decoration-none">
+            Participants List
+          <button> <a class="button" href="{% url 'join' activity.0 %}" class="text-decoration-none">Join</a> </button>
         </td>
       </tr>
       {% endfor %}
