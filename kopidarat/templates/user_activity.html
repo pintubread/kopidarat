@@ -43,6 +43,11 @@
               Edit
             </a>
           </button>
+          <button>
+            <a class="button" href="{% url 'delete_your_activity' activity.0 %}" class="text-decoration-none">
+              Cancel
+            </a>
+          </button>
         </td>
       </tr>
       {% endfor %}

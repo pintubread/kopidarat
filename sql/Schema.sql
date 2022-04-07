@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS users (
-  full_name VARCHAR(64) NOT NULL,
-  username VARCHAR(32) UNIQUE NOT NULL,
-  email VARCHAR(64) PRIMARY KEY,
-  phone_number VARCHAR(64) NOT NULL,
-  password VARCHAR(128) NOT NULL,
+  full_name VARCHAR(64) NOT NULL CHECK (full_name <> '' ),
+  username VARCHAR(32) UNIQUE NOT NULL CHECK (username <> '' ),
+  email VARCHAR(64) PRIMARY KEY CHECK (email <> '' ),
+  phone_number VARCHAR(64) NOT NULL CHECK (phone_number <> '' ),
+  password VARCHAR(128) NOT NULL CHECK (password <> '' ),
   type VARCHAR(64) NOT NULL
 );
 
@@ -38,10 +38,10 @@ CREATE TABLE IF NOT EXISTS activity (
   ON DELETE CASCADE
   DEFERRABLE INITIALLY DEFERRED 
   NOT NULL,
-  activity_name VARCHAR(128) NOT NULL,
+  activity_name VARCHAR(128) NOT NULL CHECK (activity_name <> '' ),
   start_date_time TIMESTAMP NOT NULL,
   end_date_time TIMESTAMP NOT NULL CHECK (end_date_time>=start_date_time),
-  venue VARCHAR(128) NOT NULL,
+  venue VARCHAR(128) NOT NULL CHECK (venue <> '' ),
   capacity INTEGER NOT NULL CHECK (capacity >= 2 AND capacity <= 10)
 );
 
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS review (
   timestamp TIMESTAMP NOT NULL,
   participant VARCHAR(64) REFERENCES users(email) NOT NULL,
   rating INT NOT NULL,
-  comment VARCHAR(4096) NOT NULL,
+  comment VARCHAR(4096) NOT NULL CHECK (comment <> '' ),
   PRIMARY KEY (activity_id,timestamp,participant)
 );
 
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS report (
   ON DELETE CASCADE
   DEFERRABLE INITIALLY DEFERRED
   NOT NULL,
-  comment VARCHAR(4096) NOT NULL,
+  comment VARCHAR(4096) NOT NULL CHECK (comment <> '' ),
   severity VARCHAR(6) NOT NULL CHECK (severity = 'low' OR severity = 'medium' OR severity = 'high'),
   PRIMARY KEY (submitter,timestamp)
 );

@@ -140,8 +140,16 @@ def create_activity(request):
                         user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['end_date_time'],request.POST['venue'], request.POST['capacity']])
                 except Exception as e:
                     message = str(e)
+                    if 'invalid input syntax for type timestamp' in message:
+                        message = "Please select proper dates and times for Start Date and Time and/or End Date and Time"
                     if 'violates check constraint "activity_check"' in message:
                         message = "Activity's end date and time must be after activity's start date and time."
+                    if 'violates check constraint "activity_activity_name_check"' in message:
+                        message = "Please enter a proper name for your activity"
+                    if 'violates check constraint "activity_venue_check"' in message:
+                        message = "Please enter a proper venue for your activity"
+                    if 'invalid input syntax for type integer' in message:
+                        message = "Please enter a proper participant capacity for your activity"
         
         context['message'] = message
         return render(request, 'create_activity.html', context)
@@ -176,6 +184,10 @@ def create_review(request,activity_id):
                             ])
                 except Exception as e:
                     message=str(e)
+                    if 'violates check constraint "review_comment_check"' in message:
+                        message = "Please enter a proper comment for the activity."
+                    else: 
+                        message = "Please enter a proper rating for the activity."
                     
         context["message"]=message
         return render(request, 'review.html', context)
@@ -209,8 +221,11 @@ def create_report(request, username):
                         request.POST['comment'], request.POST['severity']])
                     cursor.execute('SELECT * FROM users WHERE username=%s', [username])
                     this_participant=cursor.fetchone()
-                except IntegrityError:
-                    message = 'There exists no user with the username '+request.POST['username']+'. Please try again.'
+                except Exception:
+                    if 'violates check constraint "report_comment_check"' in message:
+                        message = "Please enter a proper comment for the activity."
+                    else:
+                        message = 'There exists no user with the username '+request.POST['username']+'. Please try again.'
 
         context['message'] = message
         context['this_participant'] = this_participant
@@ -397,6 +412,32 @@ def update_activity(request, activity_id):
         return render(request,'update_activity.html',context)
 
     return HttpResponseRedirect(reverse("index"))
+
+
+def delete_your_activity(request, activity_id):
+    '''
+    delete_your_activity view function which is responsible for the delete button 
+    in the user_activity page. Takes in the request and activity_id of the event
+    and executes a SQL statement to delete the activity from the user's display.
+    Argument: 
+        request: HTTP request
+        activity_id: the activity_id of the event
+    Return:
+        HTTP Response Redirect to the main page
+    '''
+    user_email = request.session.get("email", False)
+
+    if user_email is not False:
+        with connection.cursor() as cursor:
+
+            # Execute SQL query to delete the users joining the activity
+            cursor.execute('DELETE FROM joins WHERE activity_id = %s', [
+                activity_id])
+            cursor.execute('DELETE FROM activity WHERE activity_id = %s', [
+                activity_id])
+        return HttpResponseRedirect(reverse("user_activity"))
+    else:
+        return HttpResponseRedirect(reverse("index"))
 
 def delete_activity(request, activity_id):
     '''
@@ -615,6 +656,18 @@ def admin_user_create(request):
                         message = 'Please indicate a right user type'
                 except Exception as e:
                     message = str(e)
+                    if 'duplicate key value violates unique constraint' in message:
+                        message = "There exists a user with the same username and/or email"
+                    if 'violates check constraint "users_full_name_check"' in message:
+                        message = "Please enter your full name."
+                    if 'violates check constraint "users_username_check"' in message:
+                        message = "Please enter a proper username."
+                    if 'violates check constraint "users_phone_number_check"' in message:
+                        message = "Please enter a phone number."
+                    if 'violates check constraint "users_email_check"' in message:
+                        message = "Please enter a proper email address."
+                    if 'violates check constraint "users_password_check"' in message:
+                        message = "Please enter a password."
 
         context['message'] = message
         return render(request, 'admin_user_create.html', context)
@@ -755,6 +808,16 @@ def admin_activity_create(request):
                         user_email,request.POST['category'],request.POST['activity_name'],request.POST['start_date_time'],request.POST['end_date_time'],request.POST['venue'], request.POST['capacity']])
                 except Exception as e:
                     message = str(e)
+                    if 'invalid input syntax for type timestamp' in message:
+                        message = "Please select proper dates and times for Start Date and Time and/or End Date and Time"
+                    if 'violates check constraint "activity_check"' in message:
+                        message = "Activity's end date and time must be after activity's start date and time."
+                    if 'violates check constraint "activity_activity_name_check"' in message:
+                        message = "Please enter a proper name for your activity"
+                    if 'violates check constraint "activity_venue_check"' in message:
+                        message = "Please enter a proper venue for your activity"
+                    if 'invalid input syntax for type integer' in message:
+                        message = "Please enter a proper participant capacity for your activity"
         
         context['message'] = message
         context['categories'] = categories
@@ -783,14 +846,19 @@ def admin_activity_edit(request, activity_id):
             cursor.execute(
                 'SELECT * FROM activity WHERE activity_id=%s', [activity_id])
             this_activity = cursor.fetchone()
+            start_date_time = this_activity[4]
+            end_date_time= this_activity[5]
 
         if request.method == 'POST':
-
+            if request.POST['start_date_time']!='':
+                start_date_time=request.POST['start_date_time']
+            if request.POST['end_date_time']!='':
+                end_date_time=request.POST['end_date_time']
             with connection.cursor() as cursor:
                 try:
                     cursor.execute('UPDATE activity SET category = %s, activity_name = %s, start_date_time = %s,end_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
-                        request.POST['category'], request.POST['activity_name'], request.POST[
-                            'start_date_time'], request.POST['end_date_time'], request.POST['venue'], request.POST['capacity'], activity_id
+                        request.POST['category'], request.POST['activity_name'], 
+                            start_date_time, end_date_time, request.POST['venue'], request.POST['capacity'], activity_id
                     ])
                     cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
                     this_activity = cursor.fetchone()
@@ -1058,7 +1126,7 @@ def register(request):
         render function: renders the registration page (path: /register)
     '''
     context = {}
-    status = ''
+    message = ''
 
     if request.method == "POST":
         # Ensure password matches confirmation
@@ -1076,10 +1144,21 @@ def register(request):
                 request.session["full_name"] = request.POST['full_name']
                 request.session["type"] = 'member'
                 return redirect('index')
-            except IntegrityError:
-                status = 'There exists a user with the same email or username'
-  
-    context['message'] = status
+            except Exception as e:
+                message = str(e)
+                if 'duplicate key value violates unique constraint' in message:
+                    message = "There exists a user with the same username and/or email"
+                if 'violates check constraint "users_full_name_check"' in message:
+                    message = "Please enter your full name."
+                if 'violates check constraint "users_username_check"' in message:
+                    message = "Please enter a proper username."
+                if 'violates check constraint "users_phone_number_check"' in message:
+                    message = "Please enter a phone number."
+                if 'violates check constraint "users_email_check"' in message:
+                    message = "Please enter a proper email address."
+                if 'violates check constraint "users_password_check"' in message:
+                    message = "Please enter a password."
+        context['message'] = message
     return render(request, "register.html", context)
 
 
