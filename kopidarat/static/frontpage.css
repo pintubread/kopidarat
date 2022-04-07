@@ -1,27 +1,114 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap');
 body {
-  color: black;
-  text-align: center;
-  background-color: #ff8415;
+    color: black;
+    text-align: center;
+    background-color: #FF8415;
+    font-family: 'Arial';
+    width: 100%;
 }
 h1 {
-  font-family: "Sora";
-  font-size: 80px;
-  margin: 50px;
+    font-family: 'Sora';
+    font-size: 80px;
+    margin: 50px;
 }
 
 h2 {
-  font-family: "futura";
-  color: black;
+    font-family: 'Arial Black';
+    color: black;
+    font-size: 20px;
+
 }
 .container {
-  max-width: 500px;
-  margin: 30px auto;
+    max-width: 500px;
+    margin: auto;
 }
 a:hover {
-  color: #17706c;
-  text-decoration: underline;
+    color: #17706c;
+    text-decoration: underline;
 }
 .dark {
-  background-color: #ff8415;
+    background-color: #FF8415;    
+}
+
+.wrapper {
+    background-color: white;
+    border-radius: 1em;
+    padding: 20px 100px 20px 100px;
+    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: auto px;
+    margin-right: auto px;
+    margin-bottom: 100px;
+    margin-top: 100px;
+}
+html {
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    width: 100%;
+}
+
+.content-table {
+display: flex;
+flex-direction: column;
+align-items: center;
+width: 100%;
+}
+
+.content-table thead tr {
+background-color: black;
+color: #ffff;
+text-align : center;
+font-weight: bold;
+font-family: 'Arial Black';
+}
+
+.content-table td {
+padding : 12px 15px;
+}
+
+.content-table tbody tr {
+border-bottom: 1px solid #17706c;
+color: white;
+font-family: 'Arial';
+}
+
+table {
+border-collapse: collapse;
+width: 100%;
+border-style: hidden;
+border-radius: 1em;
+overflow: hidden;
+}
+
+table tbody tr:nth-child(odd)  {
+background-color: #17706c;
+}
+
+table tbody tr:nth-child(even)  {
+background-color: #749e9d;
+}
+
+thead {
+font-family: 'Sora';
+font-size: 16px;
+}
+
+th {
+padding-top: 9px;
+padding-bottom: 9px;
+}
+
+a {
+color: #17706c;
+text-decoration: underline;
+font-family: 'Arial Black';
+font-size: 15px;
+}
+
+.wave {
+  width: 100%;
 }

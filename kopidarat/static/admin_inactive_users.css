@@ -1,15 +1,14 @@
-
 @import url("https://fonts.googleapis.com/css2?family=Sora:wght@800&display=swap");
 body {
   color: black;
   text-align: center;
   background-color: #ff8415;
-  font-family: "Arial Black";
+  font-family: "Arial";
 }
 
 h2 {
+  font-size: 50px;
   font-family: "Sora";
-  font-size: 70px;
 }
 
 .content-table {
@@ -19,11 +18,11 @@ h2 {
   width: 100%;
 }
 
-.content-table thead tr{
+.content-table thead tr {
   background-color: black;
   color: #ffff;
   text-align: center;
-  font-weight: lighter;
+  font-weight: bold;
   font-family: "Arial Black";
 }
 
@@ -34,13 +33,12 @@ h2 {
 .content-table tbody tr {
   border-bottom: 1px solid #17706c;
   color: white;
-  font-family: "Arial";
 }
 
 table {
   border-collapse: collapse;
   width: 100%;
-  max-width: 1000px;
+  max-width: 800px;
   border-style: hidden;
   border-radius: 1em;
   overflow: hidden;
@@ -63,12 +61,14 @@ th {
   padding-top: 9px;
   padding-bottom: 9px;
 }
-.back-to-your-activities a {
+
+.back-to-main-page a {
   color: #17706c;
 }
 
 a {
   color: #ff8415;
   text-decoration: none;
+  font-family: "Arial Black";
   font-size: 20px;
 }

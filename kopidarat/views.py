@@ -738,6 +738,7 @@ def admin_activity_create(request):
     '''
     user_email = request.session.get('email', False)
     user_type = request.session.get('type')
+    message=''
 
     if user_type == 'administrator' and user_email is not False:
 

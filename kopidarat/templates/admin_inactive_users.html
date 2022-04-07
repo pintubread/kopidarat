@@ -1,13 +1,17 @@
 {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin_inactive_users.css' %}" />
 <html>
   <body>
+    <div class="back-to-main-page">
     <a href="/admin_index"> Back to Main Page </a>
+    </div>
     <h2>Users who have never joined any activity</h2>
     {% if list_of_inactive_users_empty %}
     Good news, there are no inactive users! Each user has joined at least 1 activity.
     {% else %}
     <br>
-    <table border="1">
+    <div class="content-table">
+    <table>
         <thead>
           <th>Full Name</th>
           <th>Username</th>
@@ -16,32 +20,34 @@
           <th>Edit User</th>
           <th>Delete User</th>
         </thead>
+        <tbody>
         {% for user in list_of_inactive_users %}
-        <tr>
-          <td>{{ user.0 }}</td>
-          <td>{{ user.1 }}</td>
-          <td>{{ user.2 }}</td>
-          <td>{{ user.3 }}</td>
-          <td>
-            <a
-              class="button"
-              href="admin_user_edit/{{ user.2 }}"
-              class="text-decoration-none"
-            >
-              Edit
-            </a>
-          </td>
-          <td>
-            <a
-              class="button"
-              href="admin_user_delete/{{ user.2 }}"
-              class="text-decoration-none"
-            >
-              Delete
-            </a>
-          </td>
-        </tr>
-  
-        {% endfor %}
+          <tr>
+            <td>{{ user.0 }}</td>
+            <td>{{ user.1 }}</td>
+            <td>{{ user.2 }}</td>
+            <td>{{ user.3 }}</td>
+            <td>
+              <a
+                class="button"
+                href="admin_user_edit/{{ user.2 }}"
+                class="text-decoration-none"
+              >
+                Edit
+              </a>
+            </td>
+            <td>
+              <a
+                class="button"
+                href="admin_user_delete/{{ user.2 }}"
+                class="text-decoration-none"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+      </tbody>
       </table>
+    </div>
       {%endif%}

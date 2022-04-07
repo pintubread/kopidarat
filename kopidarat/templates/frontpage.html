@@ -1,6 +1,8 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'frontpage.css' %}" />
+<body>
 <div class="container">
+<div class="wrapper">
 <h1>Welcome to KopiDarat!</h1>
 <h2>Wanna play golf but cannot find friends to play with you? Wanna try out traditional Japanese tea ceremony but cannot find anyone else who seems interested?
 </h2>
@@ -20,8 +22,9 @@
     <h2>
     Check out the types of activities we host below!
     </h2>
+    <div class="content-table">
         <br/><br/>
-        <table border=1> 
+        <table> 
         <thead>
             <th> Category</th>
             <th> Number of activities </th>
@@ -38,7 +41,7 @@
         Our top rated activities
     </h2>
         <br>
-        <table border=1> 
+        <table> 
             <thead>
                 <th> Activity Name</th>
                 <th> Average Rating </th>
@@ -50,6 +53,7 @@
             </tr>
             {%endfor%}
             </table>
+        </div>
     <h3>
     Interested? <a href='register'> Sign up now. </a> 
     </h3>
@@ -60,3 +64,5 @@
     </h3>
 </div>
 <div id="box-2" class="box"> </div>
+</div>
+</body>

@@ -9,6 +9,8 @@
     <title>Create Activity</title>
   </head>
   <body>
+    <div class="container">
+    <div class="form-wrap">
     <h2>Add New Activity</h2>
 
     <a href="admin_activity">Back to list of activities</a>
@@ -17,7 +19,7 @@
     <div>{{ message }}</div>
     {% endif %}
     <form action="{% url 'create_activity' %}" method="post">
-      {% csrf_token %} Activity Name
+      {% csrf_token %} <h4>Activity Name</h4>
       <div class="form-group">
         <input
           class="form-control"
@@ -27,7 +29,7 @@
           placeholder="Activity Name"
         />
       </div>
-      Category
+      <h4>Category</h4>
       <div class="form-group">
         <div class="form-group">
           <select id="category" name="category">
@@ -37,7 +39,7 @@
           </select>
         </div>
       </div>
-      Start Date and Time
+    <h4>Start Date and Time</h4>
       <div class="form-group">
         <input
           class="form-control"
@@ -45,7 +47,7 @@
           name="start_date_time"
         />
       </div>
-      End Date and Time
+      <h4>End Date and Time</h4>
       <div class="form-group">
         <input
           class="form-control"
@@ -53,7 +55,7 @@
           name="end_date_time"
         />
       </div>
-      Venue
+      <h4>Venue</h4>
       <div class="form-group">
         <input
           class="form-control"
@@ -62,7 +64,7 @@
           placeholder="Venue"
         />
       </div>
-      Capacity
+    <h4>Capacity</h4>
       <div class="form-group">
         <input
           class="form-control"
@@ -75,5 +77,7 @@
       </div>
       <input class="btn btn-primary" type="submit" value="Create Activity" />
     </form>
+    </div>
+    </div>
   </body>
 </html>
