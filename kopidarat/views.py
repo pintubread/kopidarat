@@ -30,7 +30,7 @@ def index(request,*kwargs):
         message=''.join(kwargs)
     if user_email is not False:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' AND a.start_date_time - NOW() < '7 days' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3) AND a.activity_id NOT IN (SELECT a3.activity_id FROM activity a3,joins j3 WHERE j3.participant='"+user_email+"' AND j3.activity_id=a3.activity_id) ORDER BY a.start_date_time ASC")
+            cursor.execute("SELECT a.activity_id, u.full_name as inviter, a.category, a.activity_name, a.start_date_time, a.end_date_time,a.venue, a.capacity, (SELECT COUNT(*) FROM activity a1, joins j1 WHERE j1.activity_id = a1.activity_id AND a.activity_id=a1.activity_id) AS joined FROM activity a, users u WHERE a.inviter = u.email AND a.start_date_time>NOW() AND a.start_date_time - NOW() < '7 days' AND a.category IN (SELECT a2.category FROM joins j2, activity a2 WHERE j2.activity_id = a2.activity_id AND j2.participant= '"+user_email+"' GROUP BY a2.category ORDER BY COUNT(*) DESC LIMIT 3) AND a.activity_id NOT IN (SELECT a3.activity_id FROM activity a3,joins j3 WHERE j3.participant='"+user_email+"' AND j3.activity_id=a3.activity_id) ORDER BY a.start_date_time,a.end_date_time ASC")
             recommended_activities = cursor.fetchall()
             if len(recommended_activities)>0:
                 empty=False
@@ -371,14 +371,19 @@ def update_activity(request, activity_id):
             cursor.execute(
                 'SELECT * FROM activity WHERE activity_id=%s', [activity_id])
             this_activity = cursor.fetchone()
+            start_date_time = this_activity[4]
+            end_date_time= this_activity[5]
 
-        if request.method == 'POST':  # TODO: catch error when there's no post method, e.g. cancel to create activity
+        if request.method == 'POST':
             with connection.cursor() as cursor:
+                if request.POST['start_date_time']!='':
+                    start_date_time=request.POST['start_date_time']
+                if request.POST['end_date_time']!='':
+                    end_date_time=request.POST['end_date_time']
                 try:
                     # Execute SQL query to update the values for the particular instance
                     cursor.execute('UPDATE activity SET activity_name = %s, category = %s, start_date_time = %s,end_date_time = %s, venue = %s, capacity = %s WHERE activity_id = %s', [
-                        request.POST['activity_name'], request.POST['category'], request.POST[
-                            'start_date_time'], request.POST['end_date_time'],request.POST['venue'], request.POST['capacity'], activity_id
+                        request.POST['activity_name'], request.POST['category'], start_date_time, end_date_time,request.POST['venue'], request.POST['capacity'], activity_id
                     ])
                     cursor.execute('SELECT * FROM activity WHERE activity_id=%s', [activity_id])
                     this_activity = cursor.fetchone()
@@ -387,6 +392,8 @@ def update_activity(request, activity_id):
 
         context['message'] = message
         context['this_activity'] = this_activity
+        context['start_date_time']=start_date_time
+        context['end_date_time'] = end_date_time
         return render(request,'update_activity.html',context)
 
     return HttpResponseRedirect(reverse("index"))
